@@ -33,6 +33,7 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 }
 
 static BOOL nero10Enabled() {
+	return YES;
 	NSDictionary *list = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.martinpham.nero10.plist"];
 	NSString *id = [[NSBundle mainBundle] bundleIdentifier];
 	// NSLog(@">>>>> %@", list);
@@ -74,13 +75,34 @@ static BOOL nero10Enabled() {
 		
 		if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
 			((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).separatorEffect = vibrancyEffect;
+			((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).sectionIndexBackgroundColor = [UIColor clearColor];
+			// [((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setSectionIndexColor:[UIColor clearColor]];
+			[((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
 		}else if ([self respondsToSelector:@selector(table)]) {
 			self.table.separatorEffect = vibrancyEffect;
+			self.table.sectionIndexBackgroundColor = [UIColor clearColor];
+			// [self.table setSectionIndexColor:[UIColor clearColor]];
+			[self.table setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
 		}else if ([self respondsToSelector:@selector(tableView)]) {
 			self.tableView.separatorEffect = vibrancyEffect;
+			self.tableView.sectionIndexBackgroundColor = [UIColor clearColor];
+			// [self.tableView setSectionIndexColor:[UIColor clearColor]];
+			[self.tableView setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
 		}
 		
+
 		
+		
+		if ([self respondsToSelector:@selector(meContactBanner)]) {
+			id me = [self performSelector:@selector(meContactBanner)];
+			UILabel *label = [me performSelector:@selector(footnoteLabel)];
+			UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
+
+			label.textColor = [UIColor whiteColor];
+			label.alpha = 0.8;
+			valueLabel.textColor = [UIColor whiteColor];
+			valueLabel.alpha = 0.9;
+		}
 		
 		self.view.backgroundColor = [UIColor clearColor];
 	}
@@ -115,6 +137,7 @@ static BOOL nero10Enabled() {
 
 
 		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+
 	}
 }
 
@@ -130,14 +153,24 @@ static BOOL nero10Enabled() {
 
 		}
 
-
+		
 		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 	}
 }
 
+
+
 %end
 
-
+%hook CNContactListViewController
+- (id)tableView:(UITableView *)arg1 cellForRowAtIndexPath:(id)arg2 {
+	UITableViewCell *cell = %orig;
+	if (nero10Enabled()) {
+		[arg1 whiteTextForCell:cell withForceWhite:NO];
+	}
+	return cell;
+}
+%end
 
 %hook UITableView
 %new
@@ -199,7 +232,7 @@ static BOOL nero10Enabled() {
 		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
 		cell.selectedBackgroundView = selectionColor;
 
-		// [self clearBackgroundForView:cell withForceWhite:NO];
+		[self clearBackgroundForView:cell withForceWhite:force];
 		[self clearBackgroundForView:cell.contentView withForceWhite:force];
 
 		if (cell.tableViewStyle == UITableViewStyleGrouped) {
@@ -212,6 +245,27 @@ static BOOL nero10Enabled() {
 				[cell sendSubviewToBack:whiteView];
 			}
 		}
+}
+
+// -(UIColor *)sectionIndexTrackingBackgroundColor {
+// 	return [UIColor clearColor];
+// }
+
+// -(id)_sectionIndexTrackingBackgroundColor {
+// 	return [UIColor clearColor];
+// }
+
+-(BOOL)_shouldSetIndexBackgroundColorToTableBackgroundColor {
+	return YES;
+}
+-(UIColor *)sectionIndexTrackingBackgroundColor {
+	return [UIColor clearColor];
+}
+// -(UIColor *)sectionIndexColor {
+// 	return [UIColor clearColor];
+// }
+-(UIColor *)sectionIndexBackgroundColor {
+	return [UIColor clearColor];
 }
 
 - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 {
