@@ -1,0 +1,33 @@
+entry = {
+  bundle = AppList;
+  cell = PSLinkCell;
+  icon = "/Library/PreferenceLoader/Preferences/no-icon.png";
+  isController = 1;
+  label = Nero10;
+  ALSettingsPath = "/var/mobile/Library/Preferences/com.martinpham.nero10.plist";
+  ALSettingsKeyPrefix = "";
+  ALChangeNotification = "com.martinpham.nero10.settingschanged";
+  ALAllowsSelection = 2;
+  ALSectionDescriptors = (
+	{
+		 items = (
+		);
+		"footer-title" = "Another iOS little tweak, allows Dark mode & Translucent on apps globally. Support iOS 10";
+	},
+  	{
+  	  title = "System Applications";
+  	  predicate = "(isSystemApplication = TRUE)";
+  	  "cell-class-name" = "ALSwitchCell";
+  	  "icon-size" = 29;
+  	  "suppress-hidden-apps" = 1;
+  	},
+  	{
+  	  title = "User Applications";
+  	  predicate = "(isSystemApplication = FALSE)";
+  	  "cell-class-name" = "ALSwitchCell";
+  	  "icon-size" = 29;
+  	  "suppress-hidden-apps" = 1;
+	  "footer-title" = "Follow me on martinpham.com";
+  	}
+  );
+};

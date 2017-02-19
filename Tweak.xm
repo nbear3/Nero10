@@ -19,6 +19,17 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
     [view sendSubviewToBack:visualEffectView];
 }
 
+static BOOL nero10Enabled() {
+	NSDictionary *list = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.martinpham.nero10.plist"];
+	NSString *id = [[NSBundle mainBundle] bundleIdentifier];
+	NSLog(@">>>>> %@", list);
+
+	if (list != nil && list[id] != nil && [list[id] boolValue] == YES) {
+		return YES;
+	}
+
+	return NO;
+}
 
 %hook UIViewController
 
@@ -26,33 +37,35 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 - (void)viewDidLoad {
     %orig;
 	
+	if (nero10Enabled()) {
+		UIImageView *iv = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"/var/mobile/bg.jpg"]];
+		iv.frame = [UIScreen mainScreen].bounds;
 
-	UIImageView *iv = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"/var/mobile/bg.jpg"]];
-    iv.frame = [UIScreen mainScreen].bounds;
+		createBlurView(iv, iv.frame, UIBlurEffectStyleDark);
 
-	createBlurView(iv, iv.frame, UIBlurEffectStyleDark);
-
-	if ([self respondsToSelector:@selector(table)]) {
-		[self.table setBackgroundView:iv];
-	}else if ([self respondsToSelector:@selector(tableView)]) {
-		[self.tableView setBackgroundView:iv];
+		if ([self respondsToSelector:@selector(table)]) {
+			[self.table setBackgroundView:iv];
+		}else if ([self respondsToSelector:@selector(tableView)]) {
+			[self.tableView setBackgroundView:iv];
+		}
+		
+		self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+		self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
+		
+		
+		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+		
+		if ([self respondsToSelector:@selector(table)]) {
+			self.table.separatorEffect = vibrancyEffect;
+		}else if ([self respondsToSelector:@selector(tableView)]) {
+			self.tableView.separatorEffect = vibrancyEffect;
+		}
+		
+		
+		
+		self.view.backgroundColor = [UIColor clearColor];
 	}
-	
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
-    self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
-    
-    
-    UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
-    
-	if ([self respondsToSelector:@selector(table)]) {
-		self.table.separatorEffect = vibrancyEffect;
-	}else if ([self respondsToSelector:@selector(tableView)]) {
-		self.tableView.separatorEffect = vibrancyEffect;
-	}
-    
-    
-    
-    self.view.backgroundColor = [UIColor clearColor];
+
 
 }
 
@@ -73,19 +86,21 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 - (void)viewDidAppear:(bool)arg1 {
 	%orig;
 
-	if ([self respondsToSelector:@selector(searchController)]) {
-		[self blurSearchBar];
-
-		[NSTimer scheduledTimerWithTimeInterval:0.3f
-                                    repeats:NO
-                                      block:^(NSTimer * _Nonnull timer) {
+	if (nero10Enabled()) {
+		if ([self respondsToSelector:@selector(searchController)]) {
 			[self blurSearchBar];
-    	}];
 
+			[NSTimer scheduledTimerWithTimeInterval:0.3f
+										repeats:NO
+										block:^(NSTimer * _Nonnull timer) {
+				[self blurSearchBar];
+			}];
+
+		}
+
+
+		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 	}
-
-
-	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 }
 
 %end
@@ -109,15 +124,16 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 	UITableViewCell *cell = %orig;
 // cell.textLabel.text = @"Doh";
 
-	cell.backgroundColor = [UIColor clearColor];
-	cell.textLabel.textColor = [UIColor whiteColor];
+	if (nero10Enabled()) {
+		cell.backgroundColor = [UIColor clearColor];
+		cell.textLabel.textColor = [UIColor whiteColor];
 
-	UIView *selectionColor = [[UIView alloc] init];
-    selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
-    cell.selectedBackgroundView = selectionColor;
+		UIView *selectionColor = [[UIView alloc] init];
+		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
+		cell.selectedBackgroundView = selectionColor;
 
-	[self clearBackgroundForView:cell.contentView];
-
+		[self clearBackgroundForView:cell.contentView];
+	}
 	return cell;
 }
 
@@ -125,15 +141,16 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 	UITableViewCell *cell = %orig;
 // cell.textLabel.text = @"Doh";
 
-	cell.backgroundColor = [UIColor clearColor];
-	cell.textLabel.textColor = [UIColor whiteColor];
+	if (nero10Enabled()) {
+		cell.backgroundColor = [UIColor clearColor];
+		cell.textLabel.textColor = [UIColor whiteColor];
 
-	UIView *selectionColor = [[UIView alloc] init];
-    selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
-    cell.selectedBackgroundView = selectionColor;
+		UIView *selectionColor = [[UIView alloc] init];
+		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
+		cell.selectedBackgroundView = selectionColor;
 
-
-	[self clearBackgroundForView:cell.contentView];
+		[self clearBackgroundForView:cell.contentView];
+	}
 
 	return cell;
 }

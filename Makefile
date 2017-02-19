@@ -5,8 +5,9 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = Nero10
 Nero10_FILES = Tweak.xm
+Nero10_FRAMEWORKS = UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
-after-install::
-	install.exec "killall -9 SpringBoard"
+# after-install::
+# 	install.exec "killall -9 SpringBoard"
