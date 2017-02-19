@@ -131,7 +131,9 @@ static BOOL nero10Enabled() {
 		v.backgroundColor = [UIColor clearColor];
 
 		if ([v respondsToSelector:@selector(textColor)]) {
-			v.textColor = [UIColor whiteColor];
+			if(v.textColor == [UIColor blackColor]) { 
+				v.textColor = [UIColor whiteColor];
+			}
 		}
 	}
 }
@@ -194,7 +196,26 @@ static BOOL nero10Enabled() {
 	return cell;
 }
 
+-(id)_sectionHeaderView:(BOOL)arg1 withFrame:(CGRect)arg2 forSection:(long long)arg3 floating:(BOOL)arg4 reuseViewIfPossible:(BOOL)arg5 willDisplay:(BOOL)arg6 {
+	UIView *view = %orig;
+	[self clearBackgroundForView:view];
+	return view;
+}
 
+-(id)_sectionFooterViewWithFrame:(CGRect)arg1 forSection:(long long)arg2 floating:(BOOL)arg3 reuseViewIfPossible:(BOOL)arg4 willDisplay:(BOOL)arg5 {
+		UIView *view = %orig;
+	[self clearBackgroundForView:view];
+	return view;
+}
+
+-(void)setTableHeaderView:(UIView *)arg1 {
+	[self clearBackgroundForView:arg1];
+	%orig;
+}
+-(void)setTableFooterView:(UIView *)arg1 {
+	[self clearBackgroundForView:arg1];
+	%orig;
+}
 %end
 
 
