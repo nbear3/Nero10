@@ -52,7 +52,7 @@ static BOOL nero10Enabled() {
 - (void)viewDidLoad {
     %orig;
 
-	NSLog(@">>>>> %@", self);
+	// NSLog(@">>>>> %@", self);
 	
 	if (nero10Enabled()) {
 		// temporary disable
@@ -78,9 +78,12 @@ static BOOL nero10Enabled() {
 			[self.tableView setBackgroundView:iv];
 		}
 		
-		
-		self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
-		self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
+		@try {
+			self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+			self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
+		}
+		@catch(NSException *e){}
+
 		
 		
 		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
@@ -181,13 +184,13 @@ static BOOL nero10Enabled() {
 }
 
 
-- (id)tableView:(UITableView *)arg1 cellForRowAtIndexPath:(id)arg2 {
-	UITableViewCell *cell = %orig;
-	if (nero10Enabled()) {
-		[arg1 whiteTextForCell:cell withForceWhite:NO];
-	}
-	return cell;
-}
+// - (id)tableView:(UITableView *)arg1 cellForRowAtIndexPath:(id)arg2 {
+// 	UITableViewCell *cell = %orig;
+// 	if (nero10Enabled()) {
+// 		[arg1 whiteTextForCell:cell withForceWhite:NO];
+// 	}
+// 	return cell;
+// }
 %end
 
 %hook UITableView
