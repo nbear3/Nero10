@@ -193,7 +193,7 @@ static BOOL nero10Enabled() {
 %hook UITableView
 %new
 - (void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force {
-
+	if(view.tag == 181188) return;
 		if ([view respondsToSelector:@selector(textLabel)]) {
 			if(view.textLabel.textColor == [UIColor blackColor] || force) { 
 				if (view.textLabel.textColor != [UIColor whiteColor]) {
@@ -214,6 +214,7 @@ static BOOL nero10Enabled() {
 
 	view.backgroundColor = [UIColor clearColor];
 	for(UIView *v in [view subviews]) {
+		if(v.tag == 181188) continue;
 		v.backgroundColor = [UIColor clearColor];
 
 		if ([v respondsToSelector:@selector(textColor)]) {
