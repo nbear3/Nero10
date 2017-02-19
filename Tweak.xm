@@ -8,6 +8,9 @@
 @property(nonatomic) UIColor *textColor;
 -(void)clearBackgroundForView:(UIView *)view;
 @end
+@interface UITableViewCell (Z)
+-(long long)tableViewStyle;
+@end
 
 
 
@@ -83,6 +86,23 @@ static BOOL nero10Enabled() {
 	}
 }
 
+- (void)viewWillAppear:(bool)arg1 {
+	%orig;
+
+	if (nero10Enabled()) {
+		if ([self respondsToSelector:@selector(searchController)]) {
+			[self blurSearchBar];
+
+			[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(blurSearchBar) userInfo:nil repeats:NO];
+
+		}
+
+
+		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+	}
+}
+
+
 - (void)viewDidAppear:(bool)arg1 {
 	%orig;
 
@@ -90,11 +110,7 @@ static BOOL nero10Enabled() {
 		if ([self respondsToSelector:@selector(searchController)]) {
 			[self blurSearchBar];
 
-			[NSTimer scheduledTimerWithTimeInterval:0.3f
-										repeats:NO
-										block:^(NSTimer * _Nonnull timer) {
-				[self blurSearchBar];
-			}];
+			[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(blurSearchBar) userInfo:nil repeats:NO];
 
 		}
 
@@ -133,6 +149,18 @@ static BOOL nero10Enabled() {
 		cell.selectedBackgroundView = selectionColor;
 
 		[self clearBackgroundForView:cell.contentView];
+
+		if (cell.tableViewStyle == UITableViewStyleGrouped) {
+			if ([cell viewWithTag:181188] == nil) {
+				UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(0,0, [UIScreen mainScreen].bounds.size.width, cell.frame.size.height)];
+				whiteView.tag = 181188;
+				whiteView.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.09];
+
+				[cell addSubview:whiteView];
+				[cell sendSubviewToBack:whiteView];
+			}
+		}
+
 	}
 	return cell;
 }
@@ -150,6 +178,17 @@ static BOOL nero10Enabled() {
 		cell.selectedBackgroundView = selectionColor;
 
 		[self clearBackgroundForView:cell.contentView];
+
+		if (cell.tableViewStyle == UITableViewStyleGrouped) {
+			if ([cell viewWithTag:181188] == nil) {
+				UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(0,0, [UIScreen mainScreen].bounds.size.width, cell.frame.size.height)];
+				whiteView.tag = 181188;
+				whiteView.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.09];
+
+				[cell addSubview:whiteView];
+				[cell sendSubviewToBack:whiteView];
+			}
+		}
 	}
 
 	return cell;
