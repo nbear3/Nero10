@@ -252,7 +252,7 @@ static BOOL nero10Enabled() {
 		cell.selectedBackgroundView = selectionColor;
 
 		[self clearBackgroundForView:cell withForceWhite:force];
-		[self clearBackgroundForView:cell.contentView withForceWhite:force];
+		// [self clearBackgroundForView:cell.contentView withForceWhite:force];
 
 		if (cell.tableViewStyle == UITableViewStyleGrouped) {
 			if ([cell viewWithTag:181188] == nil) {
@@ -287,46 +287,46 @@ static BOOL nero10Enabled() {
 	return [UIColor clearColor];
 }
 
-- (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 {
-	UITableViewCell *cell = %orig;
+// - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 {
+// 	UITableViewCell *cell = %orig;
 
-	if (nero10Enabled()) {
-		[self whiteTextForCell:cell withForceWhite:NO];
+// 	if (nero10Enabled()) {
+// 		[self whiteTextForCell:cell withForceWhite:NO];
 
-	}
-	return cell;
-}
+// 	}
+// 	return cell;
+// }
 
--(id)cellForRowAtIndexPath:(id)arg1 {
-	UITableViewCell *cell = %orig;
-
-
-	if (nero10Enabled()) {
-		[self whiteTextForCell:cell withForceWhite:NO];
-
-	}
-	return cell;	
-}
--(id)dequeueReusableCellWithIdentifier:(id)arg1 {
-	UITableViewCell *cell = %orig;
+// -(id)cellForRowAtIndexPath:(id)arg1 {
+// 	UITableViewCell *cell = %orig;
 
 
-	if (nero10Enabled()) {
-		[self whiteTextForCell:cell withForceWhite:NO];
+// 	if (nero10Enabled()) {
+// 		[self whiteTextForCell:cell withForceWhite:NO];
 
-	}
-	return cell;	
-}
--(id)_createPreparedCellForRowAtIndexPath:(id)arg1 willDisplay:(BOOL)arg2  {
-		UITableViewCell *cell = %orig;
+// 	}
+// 	return cell;	
+// }
+// -(id)dequeueReusableCellWithIdentifier:(id)arg1 {
+// 	UITableViewCell *cell = %orig;
 
 
-	if (nero10Enabled()) {
-		[self whiteTextForCell:cell withForceWhite:NO];
+// 	if (nero10Enabled()) {
+// 		[self whiteTextForCell:cell withForceWhite:NO];
 
-	}
-	return cell;
-}
+// 	}
+// 	return cell;	
+// }
+// -(id)_createPreparedCellForRowAtIndexPath:(id)arg1 willDisplay:(BOOL)arg2  {
+// 		UITableViewCell *cell = %orig;
+
+
+// 	if (nero10Enabled()) {
+// 		[self whiteTextForCell:cell withForceWhite:NO];
+
+// 	}
+// 	return cell;
+// }
 - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 willDisplay:(bool)arg3 {
 	UITableViewCell *cell = %orig;
 
@@ -338,18 +338,18 @@ static BOOL nero10Enabled() {
 
 	return cell;
 }
--(void)_configureCellForDisplay:(UITableViewCell*)cell forIndexPath:(id)arg2 {
+// -(void)_configureCellForDisplay:(UITableViewCell*)cell forIndexPath:(id)arg2 {
 
-	%orig;
+// 	%orig;
 	
 
 
-	if (nero10Enabled()) {
+// 	if (nero10Enabled()) {
 
-		[self whiteTextForCell:cell withForceWhite:NO];
-	}
+// 		[self whiteTextForCell:cell withForceWhite:NO];
+// 	}
 
-}
+// }
 -(id)_sectionHeaderView:(BOOL)arg1 withFrame:(CGRect)arg2 forSection:(long long)arg3 floating:(BOOL)arg4 reuseViewIfPossible:(BOOL)arg5 willDisplay:(BOOL)arg6 {
 	UIView *view = %orig;
 	if (nero10Enabled()) {	
