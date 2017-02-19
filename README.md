@@ -1,6 +1,6 @@
 Nero10
 =====
-Another iOS little tweak, allows Dark mode & Translucent on apps globally. Support iOS 10
+Another iOS little tweak, allows Dark mode & Translucent on apps globally. Support iOS 9, 10
 
 1) Install
 
