@@ -1,3 +1,5 @@
+
+
 @interface UIViewController (Z)
 @property(readonly, nonatomic) UITableView *tableView;
 @property(readonly, nonatomic) UITableView *table;
@@ -6,12 +8,19 @@
 @end
 @interface UIView (Z)
 @property(nonatomic) UIColor *textColor;
--(void)clearBackgroundForView:(UIView *)view;
+@property(nonatomic) UILabel *textLabel;
+@property(nonatomic) UILabel *detailTextLabel;
+-(void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force;
+- (void)whiteTextForCell:(UITableViewCell *)cell withForceWhite:(BOOL)force;
 @end
+
 @interface UITableViewCell (Z)
 -(long long)tableViewStyle;
 -(UITableView *)_tableView;
+- (UILabel *)titleLabel;
+- (UILabel *)valueLabel;
 @end
+
 
 
 
@@ -26,7 +35,7 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 static BOOL nero10Enabled() {
 	NSDictionary *list = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.martinpham.nero10.plist"];
 	NSString *id = [[NSBundle mainBundle] bundleIdentifier];
-	NSLog(@">>>>> %@", list);
+	// NSLog(@">>>>> %@", list);
 
 	if (list != nil && list[id] != nil && [list[id] boolValue] == YES) {
 		return YES;
@@ -34,6 +43,7 @@ static BOOL nero10Enabled() {
 
 	return NO;
 }
+
 
 %hook UIViewController
 
@@ -47,11 +57,14 @@ static BOOL nero10Enabled() {
 
 		createBlurView(iv, iv.frame, UIBlurEffectStyleDark);
 
-		if ([self respondsToSelector:@selector(table)]) {
+		if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
+			[((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setBackgroundView:iv];
+		}else if ([self respondsToSelector:@selector(table)]) {
 			[self.table setBackgroundView:iv];
 		}else if ([self respondsToSelector:@selector(tableView)]) {
 			[self.tableView setBackgroundView:iv];
 		}
+		
 		
 		self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
 		self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
@@ -59,7 +72,9 @@ static BOOL nero10Enabled() {
 		
 		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
 		
-		if ([self respondsToSelector:@selector(table)]) {
+		if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
+			((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).separatorEffect = vibrancyEffect;
+		}else if ([self respondsToSelector:@selector(table)]) {
 			self.table.separatorEffect = vibrancyEffect;
 		}else if ([self respondsToSelector:@selector(tableView)]) {
 			self.tableView.separatorEffect = vibrancyEffect;
@@ -126,108 +141,188 @@ static BOOL nero10Enabled() {
 
 %hook UITableView
 %new
-- (void)clearBackgroundForView:(UIView *)view {
+- (void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force {
+
+		if ([view respondsToSelector:@selector(textLabel)]) {
+			if(view.textLabel.textColor == [UIColor blackColor] || force) { 
+				if (view.textLabel.textColor != [UIColor whiteColor]) {
+					view.textLabel.alpha = 0.8;
+				}
+				view.textLabel.textColor = [UIColor whiteColor];
+				
+			}
+		}
+		if ([view respondsToSelector:@selector(detailTextLabel)]) {
+			if(view.detailTextLabel.textColor == [UIColor blackColor] || force) { 
+				if (view.detailTextLabel.textColor != [UIColor whiteColor]) {
+					view.detailTextLabel.alpha = 0.8;
+				}
+				view.detailTextLabel.textColor = [UIColor whiteColor];
+			}
+		}
+
 	view.backgroundColor = [UIColor clearColor];
 	for(UIView *v in [view subviews]) {
 		v.backgroundColor = [UIColor clearColor];
 
 		if ([v respondsToSelector:@selector(textColor)]) {
-			if(v.textColor == [UIColor blackColor]) { 
+			if(v.textColor == [UIColor blackColor] || force) { 
+				if (v.textColor != [UIColor whiteColor]) {
+					v.alpha = 0.8;
+				}
 				v.textColor = [UIColor whiteColor];
 			}
 		}
+
+		[self clearBackgroundForView:v withForceWhite:force];
 	}
+}
+%new
+- (void)whiteTextForCell:(UITableViewCell *)cell withForceWhite:(BOOL)force {
+	UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+		[cell _tableView].separatorEffect = vibrancyEffect;
+		
+		cell.backgroundColor = [UIColor clearColor];
+		cell.textLabel.textColor = [UIColor whiteColor];
+
+		if ([cell respondsToSelector:@selector(titleLabel)]) {
+			// if(cell.titleTextLabel.textColor == [UIColor blackColor]e) { 
+				// if (view.textLabel.textColor != [UIColor whiteColor]) {
+					// view.textLabel.alpha = 0.8;
+				// }
+				cell.titleLabel.textColor = [UIColor whiteColor];
+				
+			// }
+		}
+
+		UIView *selectionColor = [[UIView alloc] init];
+		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
+		cell.selectedBackgroundView = selectionColor;
+
+		// [self clearBackgroundForView:cell withForceWhite:NO];
+		[self clearBackgroundForView:cell.contentView withForceWhite:force];
+
+		if (cell.tableViewStyle == UITableViewStyleGrouped) {
+			if ([cell viewWithTag:181188] == nil) {
+				UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(0,0, [UIScreen mainScreen].bounds.size.width, cell.frame.size.height)];
+				whiteView.tag = 181188;
+				whiteView.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.09];
+
+				[cell addSubview:whiteView];
+				[cell sendSubviewToBack:whiteView];
+			}
+		}
 }
 
 - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 {
 	UITableViewCell *cell = %orig;
-// cell.textLabel.text = @"Doh";
 
 	if (nero10Enabled()) {
-
-				
-		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
-		[cell _tableView].separatorEffect = vibrancyEffect;
-		
-
-		cell.backgroundColor = [UIColor clearColor];
-		cell.textLabel.textColor = [UIColor whiteColor];
-
-		UIView *selectionColor = [[UIView alloc] init];
-		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
-		cell.selectedBackgroundView = selectionColor;
-
-		[self clearBackgroundForView:cell.contentView];
-
-		if (cell.tableViewStyle == UITableViewStyleGrouped) {
-			if ([cell viewWithTag:181188] == nil) {
-				UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(0,0, [UIScreen mainScreen].bounds.size.width, cell.frame.size.height)];
-				whiteView.tag = 181188;
-				whiteView.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.09];
-
-				[cell addSubview:whiteView];
-				[cell sendSubviewToBack:whiteView];
-			}
-		}
+		[self whiteTextForCell:cell withForceWhite:NO];
 
 	}
 	return cell;
 }
 
+-(id)cellForRowAtIndexPath:(id)arg1 {
+	UITableViewCell *cell = %orig;
+
+
+	if (nero10Enabled()) {
+		[self whiteTextForCell:cell withForceWhite:NO];
+
+	}
+	return cell;	
+}
+-(id)dequeueReusableCellWithIdentifier:(id)arg1 {
+	UITableViewCell *cell = %orig;
+
+
+	if (nero10Enabled()) {
+		[self whiteTextForCell:cell withForceWhite:NO];
+
+	}
+	return cell;	
+}
+-(id)_createPreparedCellForRowAtIndexPath:(id)arg1 willDisplay:(BOOL)arg2  {
+		UITableViewCell *cell = %orig;
+
+
+	if (nero10Enabled()) {
+		[self whiteTextForCell:cell withForceWhite:NO];
+
+	}
+	return cell;
+}
 - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 willDisplay:(bool)arg3 {
 	UITableViewCell *cell = %orig;
-// cell.textLabel.text = @"Doh";
+
 
 	if (nero10Enabled()) {
 
-				
-		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
-		[cell _tableView].separatorEffect = vibrancyEffect;
-		
-		cell.backgroundColor = [UIColor clearColor];
-		cell.textLabel.textColor = [UIColor whiteColor];
-
-		UIView *selectionColor = [[UIView alloc] init];
-		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
-		cell.selectedBackgroundView = selectionColor;
-
-		[self clearBackgroundForView:cell.contentView];
-
-		if (cell.tableViewStyle == UITableViewStyleGrouped) {
-			if ([cell viewWithTag:181188] == nil) {
-				UIView *whiteView = [[UIView alloc] initWithFrame:CGRectMake(0,0, [UIScreen mainScreen].bounds.size.width, cell.frame.size.height)];
-				whiteView.tag = 181188;
-				whiteView.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.09];
-
-				[cell addSubview:whiteView];
-				[cell sendSubviewToBack:whiteView];
-			}
-		}
+		[self whiteTextForCell:cell withForceWhite:NO];
 	}
 
 	return cell;
 }
+-(void)_configureCellForDisplay:(UITableViewCell*)cell forIndexPath:(id)arg2 {
 
+	%orig;
+	
+
+
+	if (nero10Enabled()) {
+
+		[self whiteTextForCell:cell withForceWhite:NO];
+	}
+
+}
 -(id)_sectionHeaderView:(BOOL)arg1 withFrame:(CGRect)arg2 forSection:(long long)arg3 floating:(BOOL)arg4 reuseViewIfPossible:(BOOL)arg5 willDisplay:(BOOL)arg6 {
 	UIView *view = %orig;
-	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
+	if (nero10Enabled()) {	
+		[self clearBackgroundForView:view withForceWhite:YES];
+
+		if ([view respondsToSelector:@selector(contentView)]) {
+			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
+		}
+	}
 	return view;
 }
 
 -(id)_sectionFooterViewWithFrame:(CGRect)arg1 forSection:(long long)arg2 floating:(BOOL)arg3 reuseViewIfPossible:(BOOL)arg4 willDisplay:(BOOL)arg5 {
 	UIView *view = %orig;
-	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
+	if (nero10Enabled()) {	
+		[self clearBackgroundForView:view withForceWhite:YES];
+
+		if ([view respondsToSelector:@selector(contentView)]) {
+			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
+		}
+	}
 	return view;
 }
 
--(void)setTableHeaderView:(UIView *)view {
-	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
-	%orig;
-}
--(void)setTableFooterView:(UIView *)view {
-	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
-	%orig;
-}
+// -(void)setTableHeaderView:(UIView *)view {
+// 	// NSLog(@"333");
+// 	if (nero10Enabled()) {	
+// 		[self clearBackgroundForView:view withForceWhite:YES];
+
+// 		if ([view respondsToSelector:@selector(contentView)]) {
+// 			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
+// 		}
+// 	}
+// 	%orig(view);
+// }
+// -(void)setTableFooterView:(UIView *)view {
+// 	// NSLog(@"444");
+// 	if (nero10Enabled()) {	
+// 		[self clearBackgroundForView:view withForceWhite:YES];
+
+// 		if ([view respondsToSelector:@selector(contentView)]) {
+// 			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
+// 		}
+// 	}
+// 	%orig(view);
+// }
 %end
 
 
