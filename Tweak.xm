@@ -33,7 +33,7 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
 }
 
 static BOOL nero10Enabled() {
-	return YES;
+	// return YES;
 	NSDictionary *list = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.martinpham.nero10.plist"];
 	NSString *id = [[NSBundle mainBundle] bundleIdentifier];
 	// NSLog(@">>>>> %@", list);
@@ -51,8 +51,20 @@ static BOOL nero10Enabled() {
 
 - (void)viewDidLoad {
     %orig;
+
+	NSLog(@">>>>> %@", self);
 	
 	if (nero10Enabled()) {
+		// temporary disable
+		if (
+			[[[self class] description] isEqualToString:(@"CNContactContentViewController")]
+			|| [[[self class] description] isEqualToString:(@"CNContactViewController")]
+			|| [[[self class] description] isEqualToString:(@"CNContactInlineActionsViewController")]
+			) {
+				return;
+		}
+
+
 		UIImageView *iv = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"/var/mobile/bg.jpg"]];
 		iv.frame = [UIScreen mainScreen].bounds;
 
@@ -92,18 +104,6 @@ static BOOL nero10Enabled() {
 		
 
 		
-		
-		if ([self respondsToSelector:@selector(meContactBanner)]) {
-			id me = [self performSelector:@selector(meContactBanner)];
-			UILabel *label = [me performSelector:@selector(footnoteLabel)];
-			UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
-
-			label.textColor = [UIColor whiteColor];
-			label.alpha = 0.8;
-			valueLabel.textColor = [UIColor whiteColor];
-			valueLabel.alpha = 0.9;
-		}
-		
 		self.view.backgroundColor = [UIColor clearColor];
 	}
 
@@ -138,6 +138,28 @@ static BOOL nero10Enabled() {
 
 		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 
+
+		
+		/*
+		// temporary disable
+		if ([self respondsToSelector:@selector(meContactBanner)]) {
+			id me = [self performSelector:@selector(meContactBanner)];
+			UILabel *label = [me performSelector:@selector(footnoteLabel)];
+			UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
+
+			label.textColor = [UIColor whiteColor];
+			label.alpha = 0.8;
+			valueLabel.textColor = [UIColor whiteColor];
+			valueLabel.alpha = 0.9;
+		}else if ([self respondsToSelector:@selector(contactHeaderView)]) {
+			UIView *header = [self performSelector:@selector(contactHeaderView)];
+			header.backgroundColor = [UIColor clearColor];
+		}else if ([self respondsToSelector:@selector(actionsWrapperView)]) {	
+			UIView *action = [self performSelector:@selector(actionsWrapperView)];
+			action.backgroundColor = [UIColor clearColor];
+		}
+		*/
+
 	}
 }
 
@@ -159,10 +181,6 @@ static BOOL nero10Enabled() {
 }
 
 
-
-%end
-
-%hook CNContactListViewController
 - (id)tableView:(UITableView *)arg1 cellForRowAtIndexPath:(id)arg2 {
 	UITableViewCell *cell = %orig;
 	if (nero10Enabled()) {
