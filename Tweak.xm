@@ -10,6 +10,7 @@
 @end
 @interface UITableViewCell (Z)
 -(long long)tableViewStyle;
+-(UITableView *)_tableView;
 @end
 
 
@@ -143,6 +144,12 @@ static BOOL nero10Enabled() {
 // cell.textLabel.text = @"Doh";
 
 	if (nero10Enabled()) {
+
+				
+		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+		[cell _tableView].separatorEffect = vibrancyEffect;
+		
+
 		cell.backgroundColor = [UIColor clearColor];
 		cell.textLabel.textColor = [UIColor whiteColor];
 
@@ -172,6 +179,11 @@ static BOOL nero10Enabled() {
 // cell.textLabel.text = @"Doh";
 
 	if (nero10Enabled()) {
+
+				
+		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+		[cell _tableView].separatorEffect = vibrancyEffect;
+		
 		cell.backgroundColor = [UIColor clearColor];
 		cell.textLabel.textColor = [UIColor whiteColor];
 
@@ -198,22 +210,22 @@ static BOOL nero10Enabled() {
 
 -(id)_sectionHeaderView:(BOOL)arg1 withFrame:(CGRect)arg2 forSection:(long long)arg3 floating:(BOOL)arg4 reuseViewIfPossible:(BOOL)arg5 willDisplay:(BOOL)arg6 {
 	UIView *view = %orig;
-	[self clearBackgroundForView:view];
+	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
 	return view;
 }
 
 -(id)_sectionFooterViewWithFrame:(CGRect)arg1 forSection:(long long)arg2 floating:(BOOL)arg3 reuseViewIfPossible:(BOOL)arg4 willDisplay:(BOOL)arg5 {
-		UIView *view = %orig;
-	[self clearBackgroundForView:view];
+	UIView *view = %orig;
+	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
 	return view;
 }
 
--(void)setTableHeaderView:(UIView *)arg1 {
-	[self clearBackgroundForView:arg1];
+-(void)setTableHeaderView:(UIView *)view {
+	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
 	%orig;
 }
--(void)setTableFooterView:(UIView *)arg1 {
-	[self clearBackgroundForView:arg1];
+-(void)setTableFooterView:(UIView *)view {
+	if (nero10Enabled()) {	[self clearBackgroundForView:view]; }
 	%orig;
 }
 %end
