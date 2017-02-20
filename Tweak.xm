@@ -57,7 +57,7 @@ static BOOL nero10Enabled() {
 %hook CNContactContentViewController
 %property (assign) BOOL editMode;
 - (void)didChangeToEditMode:(bool)arg1 {
-	NSLog(@">>> didChangeToEditMode >>> %@", arg1 ? @"Y" : @"N");
+	// NSLog(@">>> didChangeToEditMode >>> %@", arg1 ? @"Y" : @"N");
 	self.editMode = arg1;
 	self.tableView.tag = arg1 ? 30052014 : 0;
 	[self.tableView reloadData];
@@ -69,23 +69,30 @@ static BOOL nero10Enabled() {
 %hook UIViewController
 %new
 - (void)fixMyNumber {
-	NSLog(@">>> fixMyNumber >>> %@", self);
+	// NSLog(@">>> fixMyNumber >>> %@", self);
 
 
 		if ([self respondsToSelector:@selector(meContactBanner)]) {
 			id me = [self performSelector:@selector(meContactBanner)];
-			UILabel *label = [me performSelector:@selector(footnoteLabel)];
-			UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
+			if ([self respondsToSelector:@selector(footnoteLabel)]) {
+				UILabel *label = [me performSelector:@selector(footnoteLabel)];
 
-			label.textColor = [UIColor whiteColor];
-			label.alpha = 0.6;
-			valueLabel.textColor = [UIColor whiteColor];
-			valueLabel.alpha = 0.8;
+
+				label.textColor = [UIColor whiteColor];
+				label.alpha = 0.6;
+			}
+
+			if ([self respondsToSelector:@selector(footnoteValueLabel)]) {
+				UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
+
+				valueLabel.textColor = [UIColor whiteColor];
+				valueLabel.alpha = 0.8;
+			}
 		}
 }
 %new
 - (void)quickFix {
-	NSLog(@">>> quickFix >>> %@", self);
+	// NSLog(@">>> quickFix >>> %@", self);
 
 		// if ([self respondsToSelector:@selector(meContactBanner)]) {
 		// 	id me = [self performSelector:@selector(meContactBanner)];
@@ -121,7 +128,7 @@ static BOOL nero10Enabled() {
 - (void)viewDidLoad {
     %orig;
 
-	NSLog(@">>> viewDidLoad >>> %@", self);
+	// NSLog(@">>> viewDidLoad >>> %@", self);
 	
 	if (nero10Enabled()) {
 		// temporary disable
@@ -206,7 +213,7 @@ static BOOL nero10Enabled() {
 - (void)viewWillAppear:(bool)arg1 {
 	%orig;
 
-	NSLog(@">>> viewWillAppear >>> %@", self);
+	// NSLog(@">>> viewWillAppear >>> %@", self);
 
 	if (nero10Enabled()) {
 		if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
@@ -260,7 +267,7 @@ static BOOL nero10Enabled() {
 	%orig;
 
 
-	NSLog(@">>> viewDidAppear >>> %@", self);
+	// NSLog(@">>> viewDidAppear >>> %@", self);
 
 	if (nero10Enabled()) {
 		if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
