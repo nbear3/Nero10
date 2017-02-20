@@ -107,20 +107,26 @@ static BOOL nero10Enabled() {
 
 		if ([self respondsToSelector:@selector(contactHeaderView)]) {
 			UIView *header = [self performSelector:@selector(contactHeaderView)];
-			header.backgroundColor = [UIColor clearColor];
-			// NSLog(@">>> quickFix >>> %@", header.nameLabel);
-			// header.nameLabel.textColor = [UIColor whiteColor];
-			createBlurView(header, header.bounds, UIBlurEffectStyleExtraLight);
-			
-// header.nameLabel.textColor = [UIColor whiteColor];
+			if (header.tag != 181188) {
+				header.tag = 181188;
+				header.backgroundColor = [UIColor clearColor];
+				// NSLog(@">>> quickFix >>> %@", header.nameLabel);
+				// header.nameLabel.textColor = [UIColor whiteColor];
+				createBlurView(header, header.bounds, UIBlurEffectStyleExtraLight);
+				
+				// header.nameLabel.textColor = [UIColor whiteColor];
+			}
 			
 
 		}
 
 		if ([self respondsToSelector:@selector(actionsWrapperView)]) {	
 			UIView *action = [self performSelector:@selector(actionsWrapperView)];
-			action.backgroundColor = [UIColor clearColor];
-			createBlurView(action, action.bounds, UIBlurEffectStyleExtraLight);
+			if (action.tag != 181188) {
+				action.tag = 181188;
+				action.backgroundColor = [UIColor clearColor];
+				createBlurView(action, action.bounds, UIBlurEffectStyleExtraLight);
+			}
 		}	
 }
 
