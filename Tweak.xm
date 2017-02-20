@@ -2,6 +2,7 @@
 
 @interface UIViewController (Z)
 @property(readonly, nonatomic) UITableView *tableView;
+@property(readonly, nonatomic) UITableView *collectionView;
 @property(readonly, nonatomic) UITableView *table;
 @property(readonly, nonatomic) UISearchController *searchController;
 -(void)blurSearchBar;
@@ -20,7 +21,7 @@
 @property(nonatomic) UILabel *nameLabel;
 @property(nonatomic) UILabel *detailTextLabel;
 -(void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force;
-- (void)whiteTextForCell:(UITableViewCell *)cell withForceWhite:(BOOL)force;
+- (void)whiteTextForCell:(id)cell withForceWhite:(BOOL)force;
 @end
 
 @interface UITableViewCell (Z)
@@ -182,6 +183,8 @@ static BOOL nero10Enabled() {
 			[self.table setBackgroundView:iv];
 		}else if ([self respondsToSelector:@selector(tableView)]) {
 			[self.tableView setBackgroundView:iv];
+		}else if ([self respondsToSelector:@selector(collectionView)]) {
+			[self.collectionView setBackgroundView:iv];
 		}else {
 			// self.view.backgroundColor = [UIColor colorWithPatternImage: [UIImage imageNamed:@"/var/mobile/bg.jpg"]];
 			// [self.view addSubview:iv];
@@ -193,6 +196,13 @@ static BOOL nero10Enabled() {
 			for(UITableView *v in [self.view subviews]) {
 				if ([v isKindOfClass:[UITableView class]]) {
 					[v setBackgroundView:iv];
+				}
+			}
+
+			for(UICollectionView *v in [self.view subviews]) {
+				if ([v isKindOfClass:[UICollectionView class]]) {
+					// [v setBackgroundView:iv];
+					v.backgroundColor = [UIColor clearColor];
 				}
 			}
 
@@ -212,9 +222,12 @@ static BOOL nero10Enabled() {
 		
 		
 		@try {
-			UIWindow *window = [[UIApplication sharedApplication].windows firstObject];
-			[window addSubview:iv];
-			[window sendSubviewToBack:iv];
+			if([[UIApplication sharedApplication].windows count] == 1)
+			{
+				UIWindow *window = [[UIApplication sharedApplication].windows firstObject];
+				[window addSubview:iv];
+				[window sendSubviewToBack:iv];
+			}
 		}
 		@catch(NSException *e){}
 
@@ -372,6 +385,54 @@ static BOOL nero10Enabled() {
 
 		[arg1 reloadRowsAtIndexPaths:@[arg2] withRowAnimation:UITableViewRowAnimationFade];
 	}
+}
+%end
+
+%hook UICollectionView 
+%new
+- (void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force {
+	if(view.tag == 181188) return;
+
+	view.backgroundColor = [UIColor clearColor];
+	for(UIView *v in [view subviews]) {
+		if(v.tag == 181188) continue;
+		v.backgroundColor = [UIColor clearColor];
+
+		if ([v respondsToSelector:@selector(textColor)]) {
+			if(v.textColor == [UIColor blackColor] || force) { 
+				if (v.textColor != [UIColor whiteColor]) {
+					v.alpha = 0.8;
+				}
+				v.textColor = [UIColor whiteColor];
+			}
+		}
+
+		[self clearBackgroundForView:v withForceWhite:force];
+	}
+}
+%new
+- (void)whiteTextForCell:(UICollectionViewCell *)cell withForceWhite:(BOOL)force {		
+		cell.backgroundColor = [UIColor clearColor];
+
+
+		UIView *selectionColor = [[UIView alloc] init];
+		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
+		cell.selectedBackgroundView = selectionColor;
+
+		[self clearBackgroundForView:cell withForceWhite:force];
+		// [self clearBackgroundForView:cell.contentView withForceWhite:force];
+}
+
+-(id)_createPreparedCellForItemAtIndexPath:(id)arg1 withLayoutAttributes:(id)arg2 applyAttributes:(BOOL)arg3 isFocused:(BOOL)arg4 notify:(BOOL)arg5 {
+	UICollectionViewCell *cell = %orig;
+
+
+	if (nero10Enabled()) {
+		if (self.tag == 30052014) return cell;
+		[self whiteTextForCell:cell withForceWhite:NO];
+	}
+
+	return cell;
 }
 %end
 
