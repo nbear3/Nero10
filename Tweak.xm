@@ -74,7 +74,7 @@ static BOOL nero10Enabled() {
 
 		if ([self respondsToSelector:@selector(meContactBanner)]) {
 			id me = [self performSelector:@selector(meContactBanner)];
-			if ([self respondsToSelector:@selector(footnoteLabel)]) {
+			if ([me respondsToSelector:@selector(footnoteLabel)]) {
 				UILabel *label = [me performSelector:@selector(footnoteLabel)];
 
 
@@ -82,7 +82,7 @@ static BOOL nero10Enabled() {
 				label.alpha = 0.6;
 			}
 
-			if ([self respondsToSelector:@selector(footnoteValueLabel)]) {
+			if ([me respondsToSelector:@selector(footnoteValueLabel)]) {
 				UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
 
 				valueLabel.textColor = [UIColor whiteColor];
