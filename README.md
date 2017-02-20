@@ -8,7 +8,7 @@ Add Cydia repo http://martinpham.gitlab.io/cydia then search TouchHome
 
 or
 
-Use [DEB file](/packages/com.martinpham.nero10_0.0.1-225+debug_iphoneos-arm.deb) to install.
+Use [DEB file](/packages/com.martinpham.nero10_0.0.1-291+debug_iphoneos-arm.deb) to install.
 
 2) Build
 
