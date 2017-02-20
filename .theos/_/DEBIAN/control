@@ -2,9 +2,9 @@ Package: com.martinpham.nero10
 Name: Nero10
 Depends: mobilesubstrate
 Architecture: iphoneos-arm
-Description: Dark & Translucent mode for apps
+Description: Dark & Translucent mode for apps, supports ios 9/10
 Maintainer: MartinPham
 Author: MartinPham
 Section: Tweaks
-Version: 0.0.1-301+debug
-Installed-Size: 148
+Version: 0.0.1-329+debug
+Installed-Size: 164

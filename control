@@ -3,7 +3,7 @@ Name: Nero10
 Depends: mobilesubstrate
 Version: 0.0.1
 Architecture: iphoneos-arm
-Description: Dark & Translucent mode for apps
+Description: Dark & Translucent mode for apps, supports ios 9/10
 Maintainer: MartinPham
 Author: MartinPham
 Section: Tweaks

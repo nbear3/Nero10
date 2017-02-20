@@ -8,8 +8,12 @@
 -(void)fixMyNumber;
 -(void)quickFix;
 @property (assign) BOOL editMode;
-
 @end
+
+@interface UIApplication (Z)
+- (void)_setBackgroundStyle:(long long)style;
+@end
+
 @interface UIView (Z)
 @property(nonatomic) UIColor *textColor;
 @property(nonatomic) UILabel *textLabel;
@@ -146,6 +150,7 @@ static BOOL nero10Enabled() {
 		// 	) {
 		// 		return;
 		// }
+		
 
 		if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
 			if ([self editMode]) {
@@ -153,9 +158,21 @@ static BOOL nero10Enabled() {
 			}
 		}
 
+		[[UIApplication sharedApplication] _setBackgroundStyle:4];
+
 
 		UIImageView *iv = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"/var/mobile/bg.jpg"]];
 		iv.frame = [UIScreen mainScreen].bounds;
+
+
+		// for(UIWindow *window in [UIApplication sharedApplication].windows) {
+				// [window addSubview:iv];
+				// [window sendSubviewToBack:iv];
+			// window.backgroundColor = [UIColor colorWithPatternImage: [UIImage imageNamed:@"/var/mobile/bg.jpg"]];
+		// }
+
+
+
 
 		createBlurView(iv, iv.frame, UIBlurEffectStyleDark);
 
@@ -165,11 +182,39 @@ static BOOL nero10Enabled() {
 			[self.table setBackgroundView:iv];
 		}else if ([self respondsToSelector:@selector(tableView)]) {
 			[self.tableView setBackgroundView:iv];
+		}else {
+			// self.view.backgroundColor = [UIColor colorWithPatternImage: [UIImage imageNamed:@"/var/mobile/bg.jpg"]];
+			// [self.view addSubview:iv];
+			// [self.view sendSubviewToBack:iv];
+
+			// NSLog(@">>> viewDidLoad >>> %@ %@", self, self.view);
+
+
+			for(UITableView *v in [self.view subviews]) {
+				if ([v isKindOfClass:[UITableView class]]) {
+					[v setBackgroundView:iv];
+				}
+			}
+
+			if([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.calculator"]) {
+				[self.view addSubview:iv];
+				[self.view sendSubviewToBack:iv];
+			}
+
+
 		}
 		
 		@try {
 			self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
 			self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
+		}
+		@catch(NSException *e){}
+		
+		
+		@try {
+			UIWindow *window = [[UIApplication sharedApplication].windows firstObject];
+			[window addSubview:iv];
+			[window sendSubviewToBack:iv];
 		}
 		@catch(NSException *e){}
 
@@ -192,6 +237,16 @@ static BOOL nero10Enabled() {
 			self.tableView.sectionIndexBackgroundColor = [UIColor clearColor];
 			// [self.tableView setSectionIndexColor:[UIColor clearColor]];
 			[self.tableView setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
+		}else{
+
+			for(UITableView *v in [self.view subviews]) {
+				if ([v isKindOfClass:[UITableView class]]) {
+					v.separatorEffect = vibrancyEffect;
+					v.sectionIndexBackgroundColor = [UIColor clearColor];
+					// [v setSectionIndexColor:[UIColor clearColor]];
+					[v setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
+				}
+			}
 		}
 		
 
@@ -408,6 +463,7 @@ static BOOL nero10Enabled() {
 		}
 }
 
+
 // -(UIColor *)sectionIndexTrackingBackgroundColor {
 // 	return [UIColor clearColor];
 // }
@@ -560,3 +616,58 @@ static BOOL nero10Enabled() {
 	[UIImageJPEGRepresentation(i, 1) writeToFile:@"/var/mobile/bg.jpg" atomically:YES];
 }
 %end
+
+// %hook UIApplication
+// - (void)_setBackgroundStyle:(long long)arg1 {
+//     %orig(4);
+// }
+// %end
+
+
+// // Translucent Cydia but Dark Translucent, thanks to stonesam92
+// static NSString *LOG_HTML_URL = @"cydia.saurik.com/ui/ios~iphone/1.1/progress";
+// @interface UIWebBrowserView : UIView
+// - (NSURL *)_documentUrl;
+// @end
+// @interface _UIWebViewScrollView : UIView
+// @end
+
+
+// %hook UIWebBrowserView
+
+// - (void)loadRequest:(NSURLRequest *)request {
+//     %orig;
+
+// 	if (nero10Enabled()) {	
+// 		if ([request.URL.absoluteString rangeOfString:LOG_HTML_URL].length != 0) {
+// 			[[UIApplication sharedApplication] _setBackgroundStyle:4];
+// 			[UIView animateWithDuration:0.3
+// 								delay:0.6
+// 								options:0
+// 							animations:^{
+// 								self.alpha = 0.3;
+// 								self.superview.backgroundColor = [UIColor clearColor];
+// 								}
+// 							completion:nil];
+// 		}
+// 	}
+// }
+
+// %end
+
+// %hook _UIWebViewScrollView
+// - (void)setBackgroundColor:(UIColor *)color {
+// 	if (nero10Enabled()) {	
+// 		for (UIWebBrowserView *view in self.subviews) {
+// 			if ([view isKindOfClass:%c(UIWebBrowserView)] 
+// 			&& 
+// 					[view._documentUrl.absoluteString rangeOfString:LOG_HTML_URL].length != 0
+// 					) {
+// 				%orig([UIColor clearColor]);
+// 				return;
+// 			}
+// 		}
+// 	}
+//     %orig;
+// }
+// %end
