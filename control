@@ -4,6 +4,7 @@ Depends: mobilesubstrate
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: Dark & Translucent mode for apps, supports ios 9/10
+Depiction: http://martinpham.gitlab.io/cydia/depictions/com.martinpham.nero10.html
 Maintainer: MartinPham
 Author: MartinPham
 Section: Tweaks

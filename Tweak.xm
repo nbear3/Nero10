@@ -44,6 +44,7 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
     visualEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [view addSubview:visualEffectView];
     [view sendSubviewToBack:visualEffectView];
+	[visualEffectView release];
 }
 
 static BOOL nero10Enabled() {
@@ -53,8 +54,10 @@ static BOOL nero10Enabled() {
 	// NSLog(@">>>>> %@", list);
 
 	if (list != nil && list[id] != nil && [list[id] boolValue] == YES) {
+		[list release];
 		return YES;
 	}
+	[list release];
 
 	return NO;
 }
@@ -195,7 +198,8 @@ static BOOL nero10Enabled() {
 
 			for(UITableView *v in [self.view subviews]) {
 				if ([v isKindOfClass:[UITableView class]]) {
-					[v setBackgroundView:iv];
+					// [v setBackgroundView:iv];
+					v.backgroundColor = [UIColor clearColor];
 				}
 			}
 
@@ -206,10 +210,10 @@ static BOOL nero10Enabled() {
 				}
 			}
 
-			if([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.calculator"]) {
-				[self.view addSubview:iv];
-				[self.view sendSubviewToBack:iv];
-			}
+			// if([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.calculator"]) {
+			// 	[self.view addSubview:iv];
+			// 	[self.view sendSubviewToBack:iv];
+			// }
 
 
 		}
@@ -231,6 +235,7 @@ static BOOL nero10Enabled() {
 		}
 		@catch(NSException *e){}
 
+		[iv release];
 		
 		
 		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
@@ -419,6 +424,8 @@ static BOOL nero10Enabled() {
 		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
 		cell.selectedBackgroundView = selectionColor;
 
+		[selectionColor release];
+
 		[self clearBackgroundForView:cell withForceWhite:force];
 		// [self clearBackgroundForView:cell.contentView withForceWhite:force];
 }
@@ -435,6 +442,83 @@ static BOOL nero10Enabled() {
 	return cell;
 }
 %end
+
+/*
+@interface PHHandsetDialerNameLabelView : UIControl
+@property (retain) UILabel * nameAndLabelLabel;
+@end
+
+@interface PHHandsetDialerLCDView : UIView
+@property (retain) PHHandsetDialerNameLabelView * nameAndLabelView; 
+@property (nonatomic,retain) UITextField * numberTextField;
+@end
+
+
+@interface PHHandsetDialerView {
+	UIView* _lcdView;
+	UIView* _phonePadView;
+}
+@property(retain) UIView* topBlankView;
+@property(retain) UIView* bottomBlankView;
+@property(retain) UIView* rightBlankView;
+@property(retain) UIView* leftBlankView;
+@end
+
+@interface TPRevealingRingView : UIView
+@property (nonatomic, retain) UIColor *colorInsideRing;
+@property (nonatomic, retain) UIColor *colorOutsideRing;
+@property (nonatomic) double alphaInsideRing;
+@property (nonatomic) double alphaOutsideRing;
+@property (nonatomic) double gammaBoost;
+@property (nonatomic) bool gammaBoostInside;
+@property (nonatomic) bool gammaBoostOuterRing;
+@end
+
+%hook MPKeypadViewController
+-(void)viewDidLoad {
+	%orig;
+
+	PHHandsetDialerView *_dialerView = (PHHandsetDialerView *)MSHookIvar<PHHandsetDialerView *>(self, "_dialerView");
+	_dialerView.topBlankView.hidden = YES;
+	_dialerView.bottomBlankView.hidden = YES;
+	_dialerView.rightBlankView.hidden = YES;
+	_dialerView.leftBlankView.hidden = YES;
+
+	PHHandsetDialerLCDView* _lcdView =  (PHHandsetDialerLCDView *)MSHookIvar<PHHandsetDialerLCDView *>(_dialerView, "_lcdView");
+	UIView* _phonePadView =  (UIView *)MSHookIvar<UIView *>(_dialerView, "_phonePadView");
+	
+	_lcdView.backgroundColor = [UIColor clearColor];
+	_lcdView.numberTextField.textColor = [UIColor whiteColor];
+	_lcdView.nameAndLabelView.nameAndLabelLabel.textColor = [UIColor whiteColor];
+
+	for(UIView *v in [_phonePadView subviews]){
+		// NSLog(@">>> _phonePadView subviews >>> %@", v);
+		// if([[v description] isEqualToString:(@"PHHandsetDialerNumberPadButton")]) {
+			TPRevealingRingView *rv = [v performSelector:@selector(revealingRingView)];
+		// NSLog(@">>> _phonePadView subviews rv >>> %@", rv);
+			rv.colorOutsideRing = [UIColor clearColor];
+			rv.colorInsideRing = [UIColor clearColor];
+			// rv.colorInsideRing = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.1];
+			// rv.alphaInsideRing = 0.5;
+			// createBlurView(rv, rv.bounds, UIBlurEffectStyleDark);
+			// rv.alphaInsideRing = 0;
+
+			UIView *vv = [[UIView alloc] init];
+			vv.alpha = 0.6;
+			vv.frame = CGRectMake((rv.bounds.size.width - rv.bounds.size.height + 18)/2,(rv.bounds.size.height - rv.bounds.size.height + 18)/2,rv.bounds.size.height - 18,rv.bounds.size.height - 18);
+			vv.backgroundColor = [UIColor clearColor];
+			vv.layer.cornerRadius = vv.frame.size.height/2;
+			vv.clipsToBounds = YES;
+			createBlurView(vv, vv.bounds, UIBlurEffectStyleLight);
+			vv.layer.borderWidth = 1;
+			vv.layer.borderColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8].CGColor;
+			[rv addSubview:vv];
+
+		// }
+	}
+}
+%end
+*/
 
 %hook UITableView
 %new
@@ -509,6 +593,8 @@ static BOOL nero10Enabled() {
 		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
 		cell.selectedBackgroundView = selectionColor;
 
+		[selectionColor release];
+
 		[self clearBackgroundForView:cell withForceWhite:force];
 		// [self clearBackgroundForView:cell.contentView withForceWhite:force];
 
@@ -520,6 +606,8 @@ static BOOL nero10Enabled() {
 
 				[cell addSubview:whiteView];
 				[cell sendSubviewToBack:whiteView];
+
+				[whiteView  release];
 			}
 		}
 }
@@ -732,3 +820,4 @@ static BOOL nero10Enabled() {
 //     %orig;
 // }
 // %end
+

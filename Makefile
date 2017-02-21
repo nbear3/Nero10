@@ -10,4 +10,4 @@ Nero10_FRAMEWORKS = UIKit Foundation
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
-	install.exec "killall -9 test.nero10"
+	install.exec "killall -9 SpringBoard"
