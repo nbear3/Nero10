@@ -279,13 +279,16 @@ static BOOL nero10Enabled() {
 - (void)blurSearchBar {
 	if (self.searchController.searchBar.tag != 181188) {
 		self.searchController.searchBar.tag = 181188;
-		self.searchController.searchBar.barStyle = UIBarStyleBlackTranslucent;
-		self.searchController.searchBar.backgroundColor = [UIColor clearColor];
+		// self.searchController.searchBar.barStyle = UIBarStyleBlackTranslucent;
+		self.searchController.searchBar.searchBarStyle = UISearchBarStyleMinimal;
+		self.searchController.searchBar.backgroundColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.25];
+		UITextField *searchField = [self.searchController.searchBar valueForKey:@"searchField"];
+		searchField.textColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8];
 		
 		
-		self.searchController.searchBar.subviews[0].subviews[0].alpha = 0;
+		// self.searchController.searchBar.subviews[0].subviews[0].alpha = 0;
 		
-		createBlurView(self.searchController.searchBar, self.searchController.searchBar.bounds, UIBlurEffectStyleDark);
+		// createBlurView(self.searchController.searchBar, self.searchController.searchBar.bounds, UIBlurEffectStyleDark);
 	}
 }
 
@@ -443,7 +446,7 @@ static BOOL nero10Enabled() {
 }
 %end
 
-/*
+
 @interface PHHandsetDialerNameLabelView : UIControl
 @property (retain) UILabel * nameAndLabelLabel;
 @end
@@ -474,6 +477,13 @@ static BOOL nero10Enabled() {
 @property (nonatomic) bool gammaBoostOuterRing;
 @end
 
+@interface PHHandsetDialerNumberPadButton
+@property (nonatomic, readonly) TPRevealingRingView *revealingRingView;
+- (void)setHighlighted:(bool)arg1;
+- (void)setUsesColorDodgeBlending;
+- (void)backToHighlighted;
+@end
+
 %hook MPKeypadViewController
 -(void)viewDidLoad {
 	%orig;
@@ -489,12 +499,15 @@ static BOOL nero10Enabled() {
 	
 	_lcdView.backgroundColor = [UIColor clearColor];
 	_lcdView.numberTextField.textColor = [UIColor whiteColor];
-	_lcdView.nameAndLabelView.nameAndLabelLabel.textColor = [UIColor whiteColor];
+	_lcdView.nameAndLabelView.nameAndLabelLabel.textColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8];
 
-	for(UIView *v in [_phonePadView subviews]){
+	for(PHHandsetDialerNumberPadButton *v in [_phonePadView subviews]){
 		// NSLog(@">>> _phonePadView subviews >>> %@", v);
 		// if([[v description] isEqualToString:(@"PHHandsetDialerNumberPadButton")]) {
-			TPRevealingRingView *rv = [v performSelector:@selector(revealingRingView)];
+
+			[v setUsesColorDodgeBlending];
+			[v setHighlighted:YES];
+			TPRevealingRingView *rv = v.revealingRingView;//[v performSelector:@selector(revealingRingView)];
 		// NSLog(@">>> _phonePadView subviews rv >>> %@", rv);
 			rv.colorOutsideRing = [UIColor clearColor];
 			rv.colorInsideRing = [UIColor clearColor];
@@ -503,22 +516,46 @@ static BOOL nero10Enabled() {
 			// createBlurView(rv, rv.bounds, UIBlurEffectStyleDark);
 			// rv.alphaInsideRing = 0;
 
-			UIView *vv = [[UIView alloc] init];
-			vv.alpha = 0.6;
-			vv.frame = CGRectMake((rv.bounds.size.width - rv.bounds.size.height + 18)/2,(rv.bounds.size.height - rv.bounds.size.height + 18)/2,rv.bounds.size.height - 18,rv.bounds.size.height - 18);
-			vv.backgroundColor = [UIColor clearColor];
-			vv.layer.cornerRadius = vv.frame.size.height/2;
-			vv.clipsToBounds = YES;
-			createBlurView(vv, vv.bounds, UIBlurEffectStyleLight);
-			vv.layer.borderWidth = 1;
-			vv.layer.borderColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8].CGColor;
-			[rv addSubview:vv];
+			// UIView *vv = [[UIView alloc] init];
+			// vv.alpha = 0.6;
+			// vv.frame = CGRectMake((rv.bounds.size.width - rv.bounds.size.height + 18)/2,(rv.bounds.size.height - rv.bounds.size.height + 18)/2,rv.bounds.size.height - 18,rv.bounds.size.height - 18);
+			// vv.backgroundColor = [UIColor clearColor];
+			// vv.layer.cornerRadius = vv.frame.size.height/2;
+			// vv.clipsToBounds = YES;
+			// createBlurView(vv, vv.bounds, UIBlurEffectStyleLight);
+			// vv.layer.borderWidth = 1;
+			// vv.layer.borderColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8].CGColor;
+			// [rv addSubview:vv];
+
+
 
 		// }
 	}
 }
 %end
-*/
+
+
+%hook PHHandsetDialerNumberPadButton 
+// - (id)glyphLayer {
+// 	// NSLog(@">>> glyphLayer >>>");
+// 	// return [self performSelector:@selector(highlightedGlyphLayer)];
+// 	return nil;
+// }
+// - (void)setGlyphLayer:(id)arg1 {
+// 	// NSLog(@">>> setGlyphLayer >>>");
+// 	// [self performSelector:@selector(setHighlightedGlyphLayer:) withObject:[self performSelector:@selector(highlightedGlyphLayer)]];
+// }
+- (void)setHighlighted:(bool)arg1 {
+	%orig;
+	[NSTimer scheduledTimerWithTimeInterval:0.5f target:self selector:@selector(backToHighlighted) userInfo:nil repeats:NO];
+			
+}
+
+%new
+- (void)backToHighlighted {
+	[self setHighlighted:YES];
+}
+%end
 
 %hook UITableView
 %new
