@@ -1,0 +1,10 @@
+{
+	entry = {
+		bundle = "Nero10Settings";
+		cell = PSLinkCell;
+		detail = "Nero10SettingsController";
+		icon = "Icon.png";
+		isController = 1;
+		label = "Nero10";
+	};
+}

@@ -1,41 +1,13 @@
+#import "Headers/UICommon.h"
+extern "C" CFArrayRef CPBitmapCreateImagesFromData(CFDataRef cpbitmap, void*, int, void*);
 
+// CONSTANTS 
+static BOOL isEnabled = true;
+static BOOL useBlur = true;
+static BOOL useWallpaper = true;
 
-@interface UIViewController (Z)
-@property(readonly, nonatomic) UITableView *tableView;
-@property(readonly, nonatomic) UITableView *collectionView;
-@property(readonly, nonatomic) UITableView *table;
-@property(readonly, nonatomic) UISearchController *searchController;
--(void)blurSearchBar;
--(void)fixMyNumber;
--(void)quickFix;
-@property (assign) BOOL editMode;
-@end
-
-@interface UIApplication (Z)
-- (void)_setBackgroundStyle:(long long)style;
-@end
-
-@interface UIView (Z)
-@property(nonatomic) UIColor *textColor;
-@property(nonatomic) UILabel *textLabel;
-@property(nonatomic) UILabel *nameLabel;
-@property(nonatomic) UILabel *detailTextLabel;
--(void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force;
-- (void)whiteTextForCell:(id)cell withForceWhite:(BOOL)force;
-@end
-
-@interface UITableViewCell (Z)
--(long long)tableViewStyle;
--(UITableView *)_tableView;
-- (UILabel *)titleLabel;
-- (UILabel *)valueLabel;
-@end
-@interface CNContactContentViewController
-@property (assign) BOOL editMode;
-@property(readonly, nonatomic) UITableView *tableView;
-@end
-
-
+NSMutableDictionary *whitelist;
+CFStringRef kPrefsAppID = CFSTR("com.martinpham.nero10");
 
 
 static void createBlurView(UIView *view, CGRect bound, int effect)  {
@@ -44,28 +16,16 @@ static void createBlurView(UIView *view, CGRect bound, int effect)  {
     visualEffectView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [view addSubview:visualEffectView];
     [view sendSubviewToBack:visualEffectView];
-	[visualEffectView release];
 }
 
-static BOOL nero10Enabled() {
-	// return YES;
-	NSDictionary *list = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.martinpham.nero10.plist"];
-	NSString *id = [[NSBundle mainBundle] bundleIdentifier];
-	// NSLog(@">>>>> %@", list);
 
-	if (list != nil && list[id] != nil && [list[id] boolValue] == YES) {
-		[list release];
-		return YES;
-	}
-	[list release];
+// Tweak Hooks
+%group Tweak
 
-	return NO;
-}
 
 %hook CNContactContentViewController
 %property (assign) BOOL editMode;
 - (void)didChangeToEditMode:(bool)arg1 {
-	// NSLog(@">>> didChangeToEditMode >>> %@", arg1 ? @"Y" : @"N");
 	self.editMode = arg1;
 	self.tableView.tag = arg1 ? 30052014 : 0;
 	[self.tableView reloadData];
@@ -74,205 +34,152 @@ static BOOL nero10Enabled() {
 }
 %end;
 
+
 %hook UIViewController
+
 %new
 - (void)fixMyNumber {
-	// NSLog(@">>> fixMyNumber >>> %@", self);
+	if ([self respondsToSelector:@selector(meContactBanner)]) {
+		id me = [self performSelector:@selector(meContactBanner)];
+		if ([me respondsToSelector:@selector(footnoteLabel)]) {
+			UILabel *label = [me performSelector:@selector(footnoteLabel)];
 
 
-		if ([self respondsToSelector:@selector(meContactBanner)]) {
-			id me = [self performSelector:@selector(meContactBanner)];
-			if ([me respondsToSelector:@selector(footnoteLabel)]) {
-				UILabel *label = [me performSelector:@selector(footnoteLabel)];
-
-
-				label.textColor = [UIColor whiteColor];
-				label.alpha = 0.6;
-			}
-
-			if ([me respondsToSelector:@selector(footnoteValueLabel)]) {
-				UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
-
-				valueLabel.textColor = [UIColor whiteColor];
-				valueLabel.alpha = 0.8;
-			}
+			label.textColor = [UIColor whiteColor];
+			label.alpha = 0.6;
 		}
+
+		if ([me respondsToSelector:@selector(footnoteValueLabel)]) {
+			UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
+
+			valueLabel.textColor = [UIColor whiteColor];
+			valueLabel.alpha = 0.8;
+		}
+	}
 }
+
 %new
 - (void)quickFix {
-	// NSLog(@">>> quickFix >>> %@", self);
-
-		// if ([self respondsToSelector:@selector(meContactBanner)]) {
-		// 	id me = [self performSelector:@selector(meContactBanner)];
-		// 	UILabel *label = [me performSelector:@selector(footnoteLabel)];
-		// 	UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
-
-		// 	label.textColor = [UIColor whiteColor];
-		// 	label.alpha = 0.8;
-		// 	valueLabel.textColor = [UIColor whiteColor];
-		// 	valueLabel.alpha = 0.9;
-		// }
-
-		if ([self respondsToSelector:@selector(contactHeaderView)]) {
-			UIView *header = [self performSelector:@selector(contactHeaderView)];
-			if (header.tag != 181188) {
-				header.tag = 181188;
-				header.backgroundColor = [UIColor clearColor];
-				// NSLog(@">>> quickFix >>> %@", header.nameLabel);
-				// header.nameLabel.textColor = [UIColor whiteColor];
-				createBlurView(header, header.bounds, UIBlurEffectStyleExtraLight);
-				
-				// header.nameLabel.textColor = [UIColor whiteColor];
-			}
-			
-
+	if ([self respondsToSelector:@selector(contactHeaderView)]) {
+		UIView *header = [self performSelector:@selector(contactHeaderView)];
+		if (header.tag != 181188) {
+			header.tag = 181188;
+			header.backgroundColor = [UIColor clearColor];
+			createBlurView(header, header.bounds, UIBlurEffectStyleExtraLight);
 		}
+	}
 
-		if ([self respondsToSelector:@selector(actionsWrapperView)]) {	
-			UIView *action = [self performSelector:@selector(actionsWrapperView)];
-			if (action.tag != 181188) {
-				action.tag = 181188;
-				action.backgroundColor = [UIColor clearColor];
-				createBlurView(action, action.bounds, UIBlurEffectStyleExtraLight);
-			}
-		}	
+	if ([self respondsToSelector:@selector(actionsWrapperView)]) {	
+		UIView *action = [self performSelector:@selector(actionsWrapperView)];
+		if (action.tag != 181188) {
+			action.tag = 181188;
+			action.backgroundColor = [UIColor clearColor];
+			createBlurView(action, action.bounds, UIBlurEffectStyleExtraLight);
+		}
+	}	
 }
-
 
 - (void)viewDidLoad {
     %orig;
-
-	// NSLog(@">>> viewDidLoad >>> %@", self);
 	
-	if (nero10Enabled()) {
-		// temporary disable
-		// if (
-
-		// 	// [[[self class] description] isEqualToString:(@"CNContactContentViewController")]
-		// 	// || [[[self class] description] isEqualToString:(@"CNContactViewController")]
-		// 	// || [[[self class] description] isEqualToString:(@"CNContactInlineActionsViewController")]
-		// 	) {
-		// 		return;
-		// }
-		
-
-		if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
-			if ([self editMode]) {
-				return;
-			}
+	if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
+		if ([self editMode]) {
+			return;
 		}
-
-		[[UIApplication sharedApplication] _setBackgroundStyle:4];
-
-
-		UIImageView *iv = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"/var/mobile/bg.jpg"]];
-		iv.frame = [UIScreen mainScreen].bounds;
-
-
-		// for(UIWindow *window in [UIApplication sharedApplication].windows) {
-				// [window addSubview:iv];
-				// [window sendSubviewToBack:iv];
-			// window.backgroundColor = [UIColor colorWithPatternImage: [UIImage imageNamed:@"/var/mobile/bg.jpg"]];
-		// }
-
-
-
-
-		createBlurView(iv, iv.frame, UIBlurEffectStyleDark);
-
-		if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
-			[((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setBackgroundView:iv];
-		}else if ([self respondsToSelector:@selector(table)]) {
-			[self.table setBackgroundView:iv];
-		}else if ([self respondsToSelector:@selector(tableView)]) {
-			[self.tableView setBackgroundView:iv];
-		}else if ([self respondsToSelector:@selector(collectionView)]) {
-			[self.collectionView setBackgroundView:iv];
-		}else {
-			// self.view.backgroundColor = [UIColor colorWithPatternImage: [UIImage imageNamed:@"/var/mobile/bg.jpg"]];
-			// [self.view addSubview:iv];
-			// [self.view sendSubviewToBack:iv];
-
-			// NSLog(@">>> viewDidLoad >>> %@ %@", self, self.view);
-
-
-			for(UITableView *v in [self.view subviews]) {
-				if ([v isKindOfClass:[UITableView class]]) {
-					// [v setBackgroundView:iv];
-					v.backgroundColor = [UIColor clearColor];
-				}
-			}
-
-			for(UICollectionView *v in [self.view subviews]) {
-				if ([v isKindOfClass:[UICollectionView class]]) {
-					// [v setBackgroundView:iv];
-					v.backgroundColor = [UIColor clearColor];
-				}
-			}
-
-			// if([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.calculator"]) {
-			// 	[self.view addSubview:iv];
-			// 	[self.view sendSubviewToBack:iv];
-			// }
-
-
-		}
-		
-		@try {
-			self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
-			self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
-		}
-		@catch(NSException *e){}
-		
-		
-		@try {
-			if([[UIApplication sharedApplication].windows count] == 1)
-			{
-				UIWindow *window = [[UIApplication sharedApplication].windows firstObject];
-				[window addSubview:iv];
-				[window sendSubviewToBack:iv];
-			}
-		}
-		@catch(NSException *e){}
-
-		[iv release];
-		
-		
-		UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
-		
-		if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
-			((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).separatorEffect = vibrancyEffect;
-			((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).sectionIndexBackgroundColor = [UIColor clearColor];
-			// [((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setSectionIndexColor:[UIColor clearColor]];
-			[((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
-		}else if ([self respondsToSelector:@selector(table)]) {
-			self.table.separatorEffect = vibrancyEffect;
-			self.table.sectionIndexBackgroundColor = [UIColor clearColor];
-			// [self.table setSectionIndexColor:[UIColor clearColor]];
-			[self.table setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
-		}else if ([self respondsToSelector:@selector(tableView)]) {
-			self.tableView.separatorEffect = vibrancyEffect;
-			self.tableView.sectionIndexBackgroundColor = [UIColor clearColor];
-			// [self.tableView setSectionIndexColor:[UIColor clearColor]];
-			[self.tableView setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
-		}else{
-
-			for(UITableView *v in [self.view subviews]) {
-				if ([v isKindOfClass:[UITableView class]]) {
-					v.separatorEffect = vibrancyEffect;
-					v.sectionIndexBackgroundColor = [UIColor clearColor];
-					// [v setSectionIndexColor:[UIColor clearColor]];
-					[v setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
-				}
-			}
-		}
-		
-
-		
-		self.view.backgroundColor = [UIColor clearColor];
 	}
 
+	[[UIApplication sharedApplication] _setBackgroundStyle:4];
 
+	UIImage *background;
+	if (useWallpaper) {
+		NSData *homeWallpaperData = [NSData dataWithContentsOfFile:@"/var/mobile/Library/SpringBoard/HomeBackground.cpbitmap"];
+		if (!homeWallpaperData) {
+			homeWallpaperData = [NSData dataWithContentsOfFile:@"/var/mobile/Library/SpringBoard/LockBackground.cpbitmap"];
+		}
+		CFDataRef homeWallpaperDataRef = (__bridge CFDataRef)homeWallpaperData;
+		NSArray *imageArray = (__bridge NSArray *)CPBitmapCreateImagesFromData(homeWallpaperDataRef, NULL, 1, NULL);
+		background = [UIImage imageWithCGImage:(CGImageRef)imageArray[0]];
+	} else {
+		background = [UIImage imageNamed:@"/var/mobile/Documents/nero10_bg.png"];
+	}
+
+	UIImageView *iv = [[UIImageView alloc] initWithImage:background];
+	iv.frame = [UIScreen mainScreen].bounds;
+
+	if (useBlur) {
+		createBlurView(iv, iv.frame, UIBlurEffectStyleDark);
+	}
+
+	if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
+		[((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setBackgroundView:iv];
+	}else if ([self respondsToSelector:@selector(table)]) {
+		[self.table setBackgroundView:iv];
+	}else if ([self respondsToSelector:@selector(tableView)]) {
+		[self.tableView setBackgroundView:iv];
+	}else if ([self respondsToSelector:@selector(collectionView)]) {
+		[self.collectionView setBackgroundView:iv];
+	}else {
+		for(UITableView *v in [self.view subviews]) {
+			if ([v isKindOfClass:[UITableView class]]) {
+				v.backgroundColor = [UIColor clearColor];
+			}
+		}
+
+		for(UICollectionView *v in [self.view subviews]) {
+			if ([v isKindOfClass:[UICollectionView class]]) {
+				v.backgroundColor = [UIColor clearColor];
+			}
+		}
+	}
+	
+	@try {
+		self.navigationController.navigationBar.barStyle = UIBarStyleBlackTranslucent;
+		self.tabBarController.tabBar.barStyle = UIBarStyleBlack;
+	}
+	@catch(NSException *e){}
+	
+	
+	@try {
+		if([[UIApplication sharedApplication].windows count] == 1)
+		{
+			UIWindow *window = [[UIApplication sharedApplication].windows firstObject];
+			[window addSubview:iv];
+			[window sendSubviewToBack:iv];
+		}
+	}
+	@catch(NSException *e){}
+	
+	
+	UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+	
+	if ([ [[self class] description] isEqualToString:(@"ALApplicationPreferenceViewController")]) {
+		((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).separatorEffect = vibrancyEffect;
+		((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")).sectionIndexBackgroundColor = [UIColor clearColor];
+		// [((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setSectionIndexColor:[UIColor clearColor]];
+		[((UITableView *)MSHookIvar<UITableView *>(self, "_tableView")) setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
+	}else if ([self respondsToSelector:@selector(table)]) {
+		self.table.separatorEffect = vibrancyEffect;
+		self.table.sectionIndexBackgroundColor = [UIColor clearColor];
+		// [self.table setSectionIndexColor:[UIColor clearColor]];
+		[self.table setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
+	}else if ([self respondsToSelector:@selector(tableView)]) {
+		self.tableView.separatorEffect = vibrancyEffect;
+		self.tableView.sectionIndexBackgroundColor = [UIColor clearColor];
+		// [self.tableView setSectionIndexColor:[UIColor clearColor]];
+		[self.tableView setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
+	}else{
+
+		for(UITableView *v in [self.view subviews]) {
+			if ([v isKindOfClass:[UITableView class]]) {
+				v.separatorEffect = vibrancyEffect;
+				v.sectionIndexBackgroundColor = [UIColor clearColor];
+				// [v setSectionIndexColor:[UIColor clearColor]];
+				[v setSectionIndexTrackingBackgroundColor:[UIColor clearColor]];
+			}
+		}
+	}
+		
+	self.view.backgroundColor = [UIColor clearColor];
 }
 
 %new
@@ -284,119 +191,68 @@ static BOOL nero10Enabled() {
 		self.searchController.searchBar.backgroundColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.25];
 		UITextField *searchField = [self.searchController.searchBar valueForKey:@"searchField"];
 		searchField.textColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8];
-		
-		
-		// self.searchController.searchBar.subviews[0].subviews[0].alpha = 0;
-		
-		// createBlurView(self.searchController.searchBar, self.searchController.searchBar.bounds, UIBlurEffectStyleDark);
 	}
 }
 
 - (void)viewWillAppear:(bool)arg1 {
 	%orig;
 
-	// NSLog(@">>> viewWillAppear >>> %@", self);
-
-	if (nero10Enabled()) {
-		if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
-			if ([self editMode]) {
-				return;
-			}
+	if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
+		if ([self editMode]) {
+			return;
 		}
+	}
 
-		if ([self respondsToSelector:@selector(searchController)]) {
-			[self blurSearchBar];
+	if ([self respondsToSelector:@selector(searchController)]) {
+		[self blurSearchBar];
 
-			[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(blurSearchBar) userInfo:nil repeats:NO];
-			
-
-		}
-		if ([ [[self class] description] isEqualToString:(@"CNContactListViewController")]) {
-			[NSTimer scheduledTimerWithTimeInterval:0.3f target:self selector:@selector(fixMyNumber) userInfo:nil repeats:NO];
-		} else if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
-			[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(quickFix) userInfo:nil repeats:NO];
-		}  
-
-		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-
-
+		[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(blurSearchBar) userInfo:nil repeats:NO];
 		
-		/*
-		// temporary disable
-		if ([self respondsToSelector:@selector(meContactBanner)]) {
-			id me = [self performSelector:@selector(meContactBanner)];
-			UILabel *label = [me performSelector:@selector(footnoteLabel)];
-			UILabel *valueLabel = [me performSelector:@selector(footnoteValueLabel)];
-
-			label.textColor = [UIColor whiteColor];
-			label.alpha = 0.8;
-			valueLabel.textColor = [UIColor whiteColor];
-			valueLabel.alpha = 0.9;
-		}else if ([self respondsToSelector:@selector(contactHeaderView)]) {
-			UIView *header = [self performSelector:@selector(contactHeaderView)];
-			header.backgroundColor = [UIColor clearColor];
-		}else if ([self respondsToSelector:@selector(actionsWrapperView)]) {	
-			UIView *action = [self performSelector:@selector(actionsWrapperView)];
-			action.backgroundColor = [UIColor clearColor];
-		}
-		*/
 
 	}
+	if ([ [[self class] description] isEqualToString:(@"CNContactListViewController")]) {
+		[NSTimer scheduledTimerWithTimeInterval:0.3f target:self selector:@selector(fixMyNumber) userInfo:nil repeats:NO];
+	} else if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
+		[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(quickFix) userInfo:nil repeats:NO];
+	}  
+
+	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 }
 
 
 - (void)viewDidAppear:(bool)arg1 {
 	%orig;
 
-
-	// NSLog(@">>> viewDidAppear >>> %@", self);
-
-	if (nero10Enabled()) {
-		if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
-			if ([self editMode]) {
-				self.tableView.tag = 30052014;
-				return;
-			}
+	if ([ [[self class] description] isEqualToString:(@"CNContactContentViewController")]) {
+		if ([self editMode]) {
+			self.tableView.tag = 30052014;
+			return;
 		}
-
-		if ([self respondsToSelector:@selector(searchController)]) {
-			[self blurSearchBar];
-
-			[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(blurSearchBar) userInfo:nil repeats:NO];
-
-		}
-
-		
-		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 	}
+
+	if ([self respondsToSelector:@selector(searchController)]) {
+		[self blurSearchBar];
+
+		[NSTimer scheduledTimerWithTimeInterval:0.1f target:self selector:@selector(blurSearchBar) userInfo:nil repeats:NO];
+
+	}
+
+	
+	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 }
-
-
-
-// - (id)tableView:(UITableView *)arg1 cellForRowAtIndexPath:(id)arg2 {
-// 	UITableViewCell *cell = %orig;
-// 	if (nero10Enabled()) {
-// 		[arg1 whiteTextForCell:cell withForceWhite:NO];
-// 	}
-// 	return cell;
-// }
 %end
+
 
 %hook CNContactListViewController
 - (void)tableView:(UITableView *)arg1 didSelectRowAtIndexPath:(NSIndexPath *)arg2 {
 	%orig;
-
-
-	if (nero10Enabled()) {
-		// UITableViewCell *cell = [arg1 cellForRowAtIndexPath:arg2];
-		// [arg1 whiteTextForCell:cell withForceWhite:NO];
-
-		[arg1 reloadRowsAtIndexPaths:@[arg2] withRowAnimation:UITableViewRowAnimationFade];
-	}
+	[arg1 reloadRowsAtIndexPaths:@[arg2] withRowAnimation:UITableViewRowAnimationFade];
 }
 %end
 
+
 %hook UICollectionView 
+
 %new
 - (void)clearBackgroundForView:(UIView *)view withForceWhite:(BOOL)force {
 	if(view.tag == 181188) return;
@@ -418,6 +274,7 @@ static BOOL nero10Enabled() {
 		[self clearBackgroundForView:v withForceWhite:force];
 	}
 }
+
 %new
 - (void)whiteTextForCell:(UICollectionViewCell *)cell withForceWhite:(BOOL)force {		
 		cell.backgroundColor = [UIColor clearColor];
@@ -427,62 +284,17 @@ static BOOL nero10Enabled() {
 		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
 		cell.selectedBackgroundView = selectionColor;
 
-		[selectionColor release];
-
 		[self clearBackgroundForView:cell withForceWhite:force];
-		// [self clearBackgroundForView:cell.contentView withForceWhite:force];
 }
 
 -(id)_createPreparedCellForItemAtIndexPath:(id)arg1 withLayoutAttributes:(id)arg2 applyAttributes:(BOOL)arg3 isFocused:(BOOL)arg4 notify:(BOOL)arg5 {
 	UICollectionViewCell *cell = %orig;
-
-
-	if (nero10Enabled()) {
-		if (self.tag == 30052014) return cell;
-		[self whiteTextForCell:cell withForceWhite:NO];
-	}
-
+	if (self.tag == 30052014) return cell;
+	[self whiteTextForCell:cell withForceWhite:NO];
 	return cell;
 }
 %end
 
-
-@interface PHHandsetDialerNameLabelView : UIControl
-@property (retain) UILabel * nameAndLabelLabel;
-@end
-
-@interface PHHandsetDialerLCDView : UIView
-@property (retain) PHHandsetDialerNameLabelView * nameAndLabelView; 
-@property (nonatomic,retain) UITextField * numberTextField;
-@end
-
-
-@interface PHHandsetDialerView {
-	UIView* _lcdView;
-	UIView* _phonePadView;
-}
-@property(retain) UIView* topBlankView;
-@property(retain) UIView* bottomBlankView;
-@property(retain) UIView* rightBlankView;
-@property(retain) UIView* leftBlankView;
-@end
-
-@interface TPRevealingRingView : UIView
-@property (nonatomic, retain) UIColor *colorInsideRing;
-@property (nonatomic, retain) UIColor *colorOutsideRing;
-@property (nonatomic) double alphaInsideRing;
-@property (nonatomic) double alphaOutsideRing;
-@property (nonatomic) double gammaBoost;
-@property (nonatomic) bool gammaBoostInside;
-@property (nonatomic) bool gammaBoostOuterRing;
-@end
-
-@interface PHHandsetDialerNumberPadButton
-@property (nonatomic, readonly) TPRevealingRingView *revealingRingView;
-- (void)setHighlighted:(bool)arg1;
-- (void)setUsesColorDodgeBlending;
-- (void)backToHighlighted;
-@end
 
 %hook MPKeypadViewController
 -(void)viewDidLoad {
@@ -502,59 +314,27 @@ static BOOL nero10Enabled() {
 	_lcdView.nameAndLabelView.nameAndLabelLabel.textColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8];
 
 	for(PHHandsetDialerNumberPadButton *v in [_phonePadView subviews]){
-		// NSLog(@">>> _phonePadView subviews >>> %@", v);
-		// if([[v description] isEqualToString:(@"PHHandsetDialerNumberPadButton")]) {
-
-			[v setUsesColorDodgeBlending];
-			[v setHighlighted:YES];
-			TPRevealingRingView *rv = v.revealingRingView;//[v performSelector:@selector(revealingRingView)];
-		// NSLog(@">>> _phonePadView subviews rv >>> %@", rv);
-			rv.colorOutsideRing = [UIColor clearColor];
-			rv.colorInsideRing = [UIColor clearColor];
-			// rv.colorInsideRing = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.1];
-			// rv.alphaInsideRing = 0.5;
-			// createBlurView(rv, rv.bounds, UIBlurEffectStyleDark);
-			// rv.alphaInsideRing = 0;
-
-			// UIView *vv = [[UIView alloc] init];
-			// vv.alpha = 0.6;
-			// vv.frame = CGRectMake((rv.bounds.size.width - rv.bounds.size.height + 18)/2,(rv.bounds.size.height - rv.bounds.size.height + 18)/2,rv.bounds.size.height - 18,rv.bounds.size.height - 18);
-			// vv.backgroundColor = [UIColor clearColor];
-			// vv.layer.cornerRadius = vv.frame.size.height/2;
-			// vv.clipsToBounds = YES;
-			// createBlurView(vv, vv.bounds, UIBlurEffectStyleLight);
-			// vv.layer.borderWidth = 1;
-			// vv.layer.borderColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.8].CGColor;
-			// [rv addSubview:vv];
-
-
-
-		// }
+		[v setUsesColorDodgeBlending];
+		[v setHighlighted:YES];
+		TPRevealingRingView *rv = v.revealingRingView;
+		rv.colorOutsideRing = [UIColor clearColor];
+		rv.colorInsideRing = [UIColor clearColor];
 	}
 }
 %end
 
 
 %hook PHHandsetDialerNumberPadButton 
-// - (id)glyphLayer {
-// 	// NSLog(@">>> glyphLayer >>>");
-// 	// return [self performSelector:@selector(highlightedGlyphLayer)];
-// 	return nil;
-// }
-// - (void)setGlyphLayer:(id)arg1 {
-// 	// NSLog(@">>> setGlyphLayer >>>");
-// 	// [self performSelector:@selector(setHighlightedGlyphLayer:) withObject:[self performSelector:@selector(highlightedGlyphLayer)]];
-// }
 - (void)setHighlighted:(bool)arg1 {
 	%orig;
 	[NSTimer scheduledTimerWithTimeInterval:0.5f target:self selector:@selector(backToHighlighted) userInfo:nil repeats:NO];
-			
 }
 
 %new
 - (void)backToHighlighted {
 	[self setHighlighted:YES];
 }
+
 %end
 
 %hook UITableView
@@ -596,6 +376,7 @@ static BOOL nero10Enabled() {
 		[self clearBackgroundForView:v withForceWhite:force];
 	}
 }
+
 %new
 - (void)whiteTextForCell:(UITableViewCell *)cell withForceWhite:(BOOL)force {
 	UIVibrancyEffect *vibrancyEffect = [UIVibrancyEffect effectForBlurEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
@@ -605,15 +386,9 @@ static BOOL nero10Enabled() {
 		cell.textLabel.textColor = [UIColor whiteColor];
 
 		if ([cell respondsToSelector:@selector(titleLabel)]) {
-			// if(cell.titleTextLabel.textColor == [UIColor blackColor]e) { 
-				// if (view.textLabel.textColor != [UIColor whiteColor]) {
-					// view.textLabel.alpha = 0.8;
-				// }
 				cell.titleLabel.textColor = [UIColor whiteColor];
-				
-			// }
 		}
-		// NSLog(@">>> whiteTextForCell >>> %@", [[cell class] superclass]);
+
 		BOOL contactCell = NO;
 		if (
 			[[[[cell class] superclass] description] isEqualToString:(@"CNPropertySimpleTransportCell")]
@@ -630,10 +405,7 @@ static BOOL nero10Enabled() {
 		selectionColor.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.3];
 		cell.selectedBackgroundView = selectionColor;
 
-		[selectionColor release];
-
 		[self clearBackgroundForView:cell withForceWhite:force];
-		// [self clearBackgroundForView:cell.contentView withForceWhite:force];
 
 		if (cell.tableViewStyle == UITableViewStyleGrouped) {
 			if ([cell viewWithTag:181188] == nil && !contactCell) {
@@ -643,218 +415,69 @@ static BOOL nero10Enabled() {
 
 				[cell addSubview:whiteView];
 				[cell sendSubviewToBack:whiteView];
-
-				[whiteView  release];
 			}
 		}
 }
 
-
-// -(UIColor *)sectionIndexTrackingBackgroundColor {
-// 	return [UIColor clearColor];
-// }
-
-// -(id)_sectionIndexTrackingBackgroundColor {
-// 	return [UIColor clearColor];
-// }
-
-// -(BOOL)_shouldSetIndexBackgroundColorToTableBackgroundColor {
-// 	return YES;
-// }
-// -(UIColor *)sectionIndexTrackingBackgroundColor {
-// 	return [UIColor clearColor];
-// }
-// -(UIColor *)sectionIndexColor {
-// 	return [UIColor clearColor];
-// }
-// -(UIColor *)sectionIndexBackgroundColor {
-// 	return [UIColor clearColor];
-// }
-
-// - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 {
-// 	UITableViewCell *cell = %orig;
-
-// 	if (nero10Enabled()) {
-// 		[self whiteTextForCell:cell withForceWhite:NO];
-
-// 	}
-// 	return cell;
-// }
-
-// -(id)cellForRowAtIndexPath:(id)arg1 {
-// 	UITableViewCell *cell = %orig;
-
-
-// 	if (nero10Enabled()) {
-// 		[self whiteTextForCell:cell withForceWhite:NO];
-
-// 	}
-// 	return cell;	
-// }
-// -(id)dequeueReusableCellWithIdentifier:(id)arg1 {
-// 	UITableViewCell *cell = %orig;
-
-
-// 	if (nero10Enabled()) {
-// 		[self whiteTextForCell:cell withForceWhite:NO];
-
-// 	}
-// 	return cell;	
-// }
-// -(id)_createPreparedCellForRowAtIndexPath:(id)arg1 willDisplay:(BOOL)arg2  {
-// 		UITableViewCell *cell = %orig;
-
-
-// 	if (nero10Enabled()) {
-// 		[self whiteTextForCell:cell withForceWhite:NO];
-
-// 	}
-// 	return cell;
-// }
 - (id)_createPreparedCellForGlobalRow:(long long)arg1 withIndexPath:(id)arg2 willDisplay:(bool)arg3 {
 	UITableViewCell *cell = %orig;
 
-
-	if (nero10Enabled()) {
-		if (self.tag == 30052014) return cell;
-		[self whiteTextForCell:cell withForceWhite:NO];
-	}
-
+	if (self.tag == 30052014) return cell;
+	[self whiteTextForCell:cell withForceWhite:NO];
 	return cell;
 }
-// -(void)_configureCellForDisplay:(UITableViewCell*)cell forIndexPath:(id)arg2 {
 
-// 	%orig;
-	
-
-
-// 	if (nero10Enabled()) {
-
-// 		[self whiteTextForCell:cell withForceWhite:NO];
-// 	}
-
-// }
 -(id)_sectionHeaderView:(BOOL)arg1 withFrame:(CGRect)arg2 forSection:(long long)arg3 floating:(BOOL)arg4 reuseViewIfPossible:(BOOL)arg5 willDisplay:(BOOL)arg6 {
 	UIView *view = %orig;
-	if (nero10Enabled()) {	
-		if (self.tag == 30052014) return view;
-		[self clearBackgroundForView:view withForceWhite:YES];
-		
-		// if ([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.apple.mobilephone"])
-		// {
-		// 	createBlurView(view, view.bounds, UIBlurEffectStyleDark);
-		// 	// view.alpha = 0.7;
-		// }
 
-		
+	if (self.tag == 30052014) return view;
+	[self clearBackgroundForView:view withForceWhite:YES];
 
-		if ([view respondsToSelector:@selector(contentView)]) {
-			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
-		}
+	if ([view respondsToSelector:@selector(contentView)]) {
+		[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
 	}
+	
 	return view;
 }
 
 -(id)_sectionFooterViewWithFrame:(CGRect)arg1 forSection:(long long)arg2 floating:(BOOL)arg3 reuseViewIfPossible:(BOOL)arg4 willDisplay:(BOOL)arg5 {
 	UIView *view = %orig;
-	if (nero10Enabled()) {	
-		if (self.tag == 30052014) return view;
-		[self clearBackgroundForView:view withForceWhite:YES];
+	if (self.tag == 30052014) return view;
+	[self clearBackgroundForView:view withForceWhite:YES];
 
-		if ([view respondsToSelector:@selector(contentView)]) {
-			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
-		}
+	if ([view respondsToSelector:@selector(contentView)]) {
+		[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
 	}
+
 	return view;
 }
-
-// -(void)setTableHeaderView:(UIView *)view {
-// 	// NSLog(@"333");
-// 	if (nero10Enabled()) {	
-// 		[self clearBackgroundForView:view withForceWhite:YES];
-
-// 		if ([view respondsToSelector:@selector(contentView)]) {
-// 			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
-// 		}
-// 	}
-// 	%orig(view);
-// }
-// -(void)setTableFooterView:(UIView *)view {
-// 	// NSLog(@"444");
-// 	if (nero10Enabled()) {	
-// 		[self clearBackgroundForView:view withForceWhite:YES];
-
-// 		if ([view respondsToSelector:@selector(contentView)]) {
-// 			[self clearBackgroundForView:[view performSelector:@selector(contentView)] withForceWhite:YES]; 
-// 		}
-// 	}
-// 	%orig(view);
-// }
 %end
 
+%end
 
-%hook SpringBoard
-- (void)applicationDidFinishLaunching: (id) application {
-    %orig;
-
-	UIImage *i = [[[%c(SBWallpaperController) performSelector:@selector(sharedInstance)] performSelector:@selector(_activeWallpaperView)] performSelector:@selector(_displayedImage)];
-	
-	[UIImageJPEGRepresentation(i, 1) writeToFile:@"/var/mobile/bg.jpg" atomically:YES];
+// Preference Loading
+static void loadPrefs()
+{
+	whitelist = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.martinpham.nero10.plist"];
+	if (whitelist != nil) {
+		isEnabled = [[whitelist objectForKey:@"isEnabled"] boolValue];
+		useBlur = [[whitelist objectForKey:@"useBlur"] boolValue];
+		useWallpaper = [[whitelist objectForKey:@"useWallpaper"] boolValue];
+	}
 }
-%end
 
-// %hook UIApplication
-// - (void)_setBackgroundStyle:(long long)arg1 {
-//     %orig(4);
-// }
-// %end
+%ctor 
+{
+    @autoreleasepool {
+        loadPrefs();
+		NSString *bundle = [[NSBundle mainBundle] bundleIdentifier];
 
+		/* put bundle you DO want to inject into here */
+		if (isEnabled && [[whitelist objectForKey:bundle] boolValue]) {
+			// NSLog(@"[Nero10] Bundle: %@", bundle);
+			%init(Tweak);
+		}
 
-// // Translucent Cydia but Dark Translucent, thanks to stonesam92
-// static NSString *LOG_HTML_URL = @"cydia.saurik.com/ui/ios~iphone/1.1/progress";
-// @interface UIWebBrowserView : UIView
-// - (NSURL *)_documentUrl;
-// @end
-// @interface _UIWebViewScrollView : UIView
-// @end
-
-
-// %hook UIWebBrowserView
-
-// - (void)loadRequest:(NSURLRequest *)request {
-//     %orig;
-
-// 	if (nero10Enabled()) {	
-// 		if ([request.URL.absoluteString rangeOfString:LOG_HTML_URL].length != 0) {
-// 			[[UIApplication sharedApplication] _setBackgroundStyle:4];
-// 			[UIView animateWithDuration:0.3
-// 								delay:0.6
-// 								options:0
-// 							animations:^{
-// 								self.alpha = 0.3;
-// 								self.superview.backgroundColor = [UIColor clearColor];
-// 								}
-// 							completion:nil];
-// 		}
-// 	}
-// }
-
-// %end
-
-// %hook _UIWebViewScrollView
-// - (void)setBackgroundColor:(UIColor *)color {
-// 	if (nero10Enabled()) {	
-// 		for (UIWebBrowserView *view in self.subviews) {
-// 			if ([view isKindOfClass:%c(UIWebBrowserView)] 
-// 			&& 
-// 					[view._documentUrl.absoluteString rangeOfString:LOG_HTML_URL].length != 0
-// 					) {
-// 				%orig([UIColor clearColor]);
-// 				return;
-// 			}
-// 		}
-// 	}
-//     %orig;
-// }
-// %end
-
+		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback) loadPrefs, kPrefsAppID, NULL, CFNotificationSuspensionBehaviorCoalesce);
+	}
+}

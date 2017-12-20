@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>PSSwitchTableCell</string>
+            <key>label</key>
+            <string>Enabled</string>
+            <key>key</key>
+            <string>isEnabled</string>
+            <key>defaults</key>
+            <string>com.martinpham.nero10</string>
+            <key>default</key>
+            <true/>
+            <key>PostNotification</key>
+            <string>com.martinpham.nero10.settingschanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Nero10 Application List</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>bundle</key>
+            <string>AppList</string>
+            <key>isController</key>
+            <string>1</string>
+            <key>label</key>
+            <string>Whitelist</string>
+            <key>ALAllowsSelection</key>
+            <string>1</string>
+            <key>ALSettingsKeyPrefix</key>
+            <string></string>
+            <key>ALSettingsDefaultValue</key>
+            <string>0</string>
+            <key>ALSettingsPath</key>
+            <string>/var/mobile/Library/Preferences/com.martinpham.nero10.plist</string>
+            <key>ALSingleEnabledMode</key>
+            <false/>
+            <key>ALChangeNotification</key>
+            <string>com.martinpham.nero10.settingschanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+            <key>label</key>
+            <string>Options</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>PSSwitchTableCell</string>
+            <key>label</key>
+            <string>Blur Background</string>
+            <key>key</key>
+            <string>useBlur</string>
+            <key>defaults</key>
+            <string>com.martinpham.nero10</string>
+            <key>default</key>
+            <true/>
+            <key>PostNotification</key>
+            <string>com.martinpham.nero10.settingschanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSSwitchCell</string>
+            <key>cellClass</key>
+            <string>PSSwitchTableCell</string>
+            <key>label</key>
+            <string>Use Wallpaper</string>
+            <key>key</key>
+            <string>useWallpaper</string>
+            <key>defaults</key>
+            <string>com.martinpham.nero10</string>
+            <key>default</key>
+            <true/>
+            <key>PostNotification</key>
+            <string>com.martinpham.nero10.settingschanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>action</key>
+            <string>choosePhoto</string>
+            <key>label</key>
+            <string>Choose Image</string>
+            <key>PostNotification</key>
+            <string>com.martinpham.nero10.settingschanged</string>
+        </dict>
+
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Respring</string>
+            <key>action</key>
+            <string>respring</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSGroupCell</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSButtonCell</string>
+            <key>label</key>
+            <string>Github</string>
+            <key>action</key>
+            <string>github</string>
+        </dict>
+    </array>
+    <key>title</key>
+    <string>Nero10</string>
+</dict>
+</plist>
