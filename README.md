@@ -1,23 +1,20 @@
-Nero10
-=====
-Another iOS little tweak, allows Dark mode & Translucent on apps globally. Support iOS 9, 10
+# Nero10
 
-1) Install
+- Another iOS little tweak, allows Dark mode & Translucent on apps globally. Support iOS 9, 10
+- Forked from https://gitlab.com/martinpham/Nero10
 
-Add Cydia repo http://martinpham.gitlab.io/cydia then search TouchHome
+### Install
+Add Cydia repo http://nbear3.github.io/ and search Nero10
+
+### Build & Run
+
+Change IP & Port of your device's SSH in `Makefile`
+
+<pre><code> make package
 
 or
 
-Use [DEB file](/packages/) to install.
-
-2) Build
-
-``make package``
-
-3) Build & Run
-
-Change IP & Port of your device's SSH in ``Makefile`` file
-``THEOS_DEVICE_IP = 127.0.0.1``
-``THEOS_DEVICE_PORT = 2222``
-
-``make package install``
+THEOS_DEVICE_IP = localhost
+THEOS_DEVICE_PORT = 2222
+make package install
+</code></pre>
